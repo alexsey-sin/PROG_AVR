@@ -13,16 +13,17 @@ def run_listen(addr):
 
     serialString = ''  # Used to hold data coming over UART
     while 1:
-        send_mess = bytes([addr, 0x03, 0x00, 0x00, 0x00, 0x01])
+        send_mess = bytes([addr, 0x03, 0x00, 0x00, 0x00, 0x05])
         send_mess += crc16(send_mess)
         # print(send_mess.hex(' '))
         serialPort.write(send_mess)
+        time.sleep(0.2)
         res = bytes()
         # Ждем, пока в последовательном буфере не появятся ожидающие данные
         while serialPort.in_waiting > 0:
             b = serialPort.read()
             res += b
-        if len(res) > 0:  #  and res[0:3] == bytes([0x01, 0x03, 0x02]):
+        if len(res) > 5:  #  and res[0:3] == bytes([0x01, 0x03, 0x02]):
             if res[-2:] != crc16(res[0:-2]):
                 print('Ошибка CRC16')
                 break
@@ -32,7 +33,8 @@ def run_listen(addr):
             # print(res[0:-2].hex(' '), crc16(res[0:-2]).hex(' '))
             # print(res[-2:].hex(' '))
         time.sleep(1)
-
+    serialPort.close()
+    
 def change_address(old_addr, new_addr):
     if old_addr < 1 or old_addr > 247:
         print(f'Адрес "{old_addr}" вне диапазона 1-247')
@@ -40,24 +42,26 @@ def change_address(old_addr, new_addr):
     if new_addr < 1 or new_addr > 247:
         print(f'Новый адрес "{new_addr}" вне диапазона 1-247')
         return
-    send_mess = bytes([old_addr, 0x06, 0x00, 0x01, 0x00, new_addr])
-    print(send_mess.hex(' '))
+    send_mess = bytes([old_addr, 0x06, 0x00, 0x02, 0x00, new_addr])
     send_mess += crc16(send_mess)
-    print(send_mess.hex(' '))
+    print('SEND:', send_mess.hex(' '))
     serialPort = serial.Serial(
         port=comport, baudrate=9600, bytesize=8, timeout=comTimeout, stopbits=serial.STOPBITS_ONE
     )
-    serialPort.flushOutput()
-    serialPort.flushInput()
 
     res = serialPort.write(send_mess)
-    print(res)
+    time.sleep(0.2)
+
     ans = bytes()
     # Ждем, пока в последовательном буфере не появятся ожидающие данные
     while serialPort.in_waiting > 0:
         b = serialPort.read()
         ans += b
-    print(ans.hex(' '))
+    print('RECV:', ans.hex(' '))
+    serialPort.close()
+    
+    
+    
     
 def crc16(data: bytes):
     crc = 0xffff
@@ -73,15 +77,10 @@ def crc16(data: bytes):
 
 
 if __name__ == "__main__":
-    # run_listen(1)
-    change_address(1, 4)
+    run_listen(245)
+    # change_address(4, 245)
     
     
-    
-    
-    
-    
-
 
 # DEFAULT_UNIT_ID ::= 1
 # DEFAULT_BAUD_RATE ::= 9600
@@ -96,3 +95,8 @@ if __name__ == "__main__":
 # BAUD_RATE_4800_ ::= 2
 # BAUD_RATE_9600_ ::= 3
 # BAUD_RATE_19200_ ::= 4
+
+
+
+
+
