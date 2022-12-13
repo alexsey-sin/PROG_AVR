@@ -1,7 +1,8 @@
 import serial  # pip install pyserial
 import time
 
-comport = 'com21'
+# comport = 'com21'
+comport = 'com8'
 comTimeout = 5 
 
 def run_listen(addr):
@@ -29,7 +30,8 @@ def run_listen(addr):
                 break
             b_temp = (res[3] << 8) + res[4]
             f_temp = float(b_temp / 10)
-            print(res.hex(' '), 'Temp: %.1f' % round(f_temp, 1))
+            # print(res.hex(' '), 'Temp: %.1f' % round(f_temp, 1))
+            print('Temp: %.1f' % round(f_temp, 1))
             # print(res[0:-2].hex(' '), crc16(res[0:-2]).hex(' '))
             # print(res[-2:].hex(' '))
         time.sleep(1)
