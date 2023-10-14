@@ -116,7 +116,7 @@ volatile uint16_t EXTREMUM = 0;
 volatile int8_t ALARM_TRIGGER = 0;		//1 - взведенное положение разрешающее сигнализацию о прогорании дров
 #define ALARM_TRIGGER_OFF		0
 #define ALARM_TRIGGER_ON		1
-volatile int8_t ERROR_ALARM_TRIGGER = 0;		//1 - взведенное положение разрешающее сигнализацию об ошибке датчиков
+volatile int8_t ERROR_ALARM_TRIGGER = 1;		//1 - взведенное положение разрешающее сигнализацию об ошибке датчиков
 #define ERROR_ALARM_TRIGGER_OFF		0
 #define ERROR_ALARM_TRIGGER_ON		1
 //===============================================================================

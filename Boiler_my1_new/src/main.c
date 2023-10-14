@@ -1050,7 +1050,6 @@ void Work(void){	//анализ и работа
 		FlapTravel(FLAP_FORVARD,(uint8_t)d);
 		EXTREMUM = SETVAL_TEMP_SMOKE;
 		ALARM_TRIGGER = ALARM_TRIGGER_OFF;
-		ERROR_ALARM_TRIGGER = ERROR_ALARM_TRIGGER_ON;
 	}
 	if(new == 1 && NEW_BOILER_STATUS != BOILER_STATUS_AUTO){	//если выход из состояния - "авто"
 		FlapTravel(FLAP_START, 0);
