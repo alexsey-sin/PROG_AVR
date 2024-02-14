@@ -1,0 +1,1834 @@
+   1               		.file	"main.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+  94               	.global	__vector_default
+  96               	__vector_default:
+   1:main.c        **** /*****************************************************************************
+   2:main.c        **** *
+   3:main.c        **** * AVRPROG compatible boot-loader
+   4:main.c        **** * Version  : 0.85 (Dec. 2008)
+   5:main.c        **** * Compiler : avr-gcc 4.1.2 / avr-libc 1.4.6
+   6:main.c        **** * size     : depends on features and startup ( minmal features < 512 words)
+   7:main.c        **** * by       : Martin Thomas, Kaiserslautern, Germany
+   8:main.c        **** *            eversmith@heizung-thomas.de
+   9:main.c        **** *            Additional code and improvements contributed by:
+  10:main.c        **** *           - Uwe Bonnes
+  11:main.c        **** *           - Bjoern Riemer
+  12:main.c        **** *           - Olaf Rempel
+  13:main.c        **** *
+  14:main.c        **** * License  : Copyright (c) 2006-2008 M. Thomas, U. Bonnes, O. Rempel
+  15:main.c        **** *            Free to use. You have to mention the copyright
+  16:main.c        **** *            owners in source-code and documentation of derived
+  17:main.c        **** *            work. No warranty! (Yes, you can insert the BSD
+  18:main.c        **** *            license here)
+  19:main.c        **** *
+  20:main.c        **** * Tested with ATmega8, ATmega16, ATmega162, ATmega32, ATmega324P,
+  21:main.c        **** *             ATmega644, ATmega644P, ATmega128, AT90CAN128
+  22:main.c        **** *
+  23:main.c        **** * - Initial versions have been based on the Butterfly bootloader-code
+  24:main.c        **** *   by Atmel Corporation (Authors: BBrandal, PKastnes, ARodland, LHM)
+  25:main.c        **** *
+  26:main.c        **** ****************************************************************************
+  27:main.c        **** *
+  28:main.c        **** *  See the makefile and readme.txt for information on how to adapt 
+  29:main.c        **** *  the linker-settings to the selected Boot Size (BOOTSIZE=xxxx) and 
+  30:main.c        **** *  the MCU-type. Other configurations futher down in this file.
+  31:main.c        **** *
+  32:main.c        **** *  With BOOT_SIMPLE, minimal features and discarded int-vectors
+  33:main.c        **** *  this bootloader has should fit into a a 512 word (1024, 0x400 bytes) 
+  34:main.c        **** *  bootloader-section. 
+  35:main.c        **** *
+  36:main.c        **** ****************************************************************************/
+  37:main.c        **** 
+  38:main.c        **** /* Частота контроллера (кварца) */
+  39:main.c        **** #ifndef F_CPU
+  40:main.c        **** // #define F_CPU 7372800
+  41:main.c        **** //#define F_CPU (7372800/2)
+  42:main.c        **** #define F_CPU 8000000
+  43:main.c        **** #endif
+  44:main.c        **** 
+  45:main.c        **** /* UART Скорость UART оптимально 19200 */
+  46:main.c        **** //#define BAUDRATE 9600
+  47:main.c        **** #define BAUDRATE 19200
+  48:main.c        **** //#define BAUDRATE 115200
+  49:main.c        **** 
+  50:main.c        **** /* Режим двойной скорости UART (бит U2C)*/
+  51:main.c        **** //#define UART_DOUBLESPEED
+  52:main.c        **** 
+  53:main.c        **** /* Используется второй UART на mega128 / can128 / mega162 / mega324p / mega644p */
+  54:main.c        **** //#define UART_USE_SECOND
+  55:main.c        **** 
+  56:main.c        **** /* Тип устройства:
+  57:main.c        ****    Для AVRProg выбирать BOOT 
+  58:main.c        ****    Это корректное значение для bootloader.
+  59:main.c        ****    avrdude может определить только part-code для ISP */
+  60:main.c        **** #define DEVTYPE     DEVTYPE_BOOT
+  61:main.c        **** // #define DEVTYPE     DEVTYPE_ISP
+  62:main.c        **** 
+  63:main.c        **** /*
+  64:main.c        ****  * Выбор порта для кнопки входа в загрузчик
+  65:main.c        ****  * Чтобы войти в загрузчик надо чтобы при запуске эта кнопка замыкала пин на землю
+  66:main.c        ****  */
+  67:main.c        **** #define BLPORT		PORTD
+  68:main.c        **** #define BLDDR		DDRD
+  69:main.c        **** #define BLPIN		PIND
+  70:main.c        **** #define BLPNUM		PIND7
+  71:main.c        **** 
+  72:main.c        **** /*
+  73:main.c        ****  * Выбор порта для индикатора работы загрузчика
+  74:main.c        ****  * Светодиод горит - мы в загрузчике
+  75:main.c        ****  */
+  76:main.c        **** 
+  77:main.c        **** #define ENABLE_BOOT_LED
+  78:main.c        **** #define BIPORT		PORTD
+  79:main.c        **** #define BIDDR		DDRD
+  80:main.c        **** #define BIPIN		PIND
+  81:main.c        **** #define BIPNUM		PIND5
+  82:main.c        **** 
+  83:main.c        **** 
+  84:main.c        **** /*
+  85:main.c        ****  * Выключить Собачий таймер на время загрузчика
+  86:main.c        ****  */
+  87:main.c        **** #define DISABLE_WDT_AT_STARTUP
+  88:main.c        **** 
+  89:main.c        **** /*
+  90:main.c        ****  * Watchdog-reset is issued at exit 
+  91:main.c        ****  * define the timeout-value here (see avr-libc manual)
+  92:main.c        ****  */
+  93:main.c        **** #define EXIT_WDT_TIME   WDTO_250MS
+  94:main.c        **** 
+  95:main.c        **** /*
+  96:main.c        ****  * Выбор режима загрузчика
+  97:main.c        ****  * SIMPLE-Mode - Загрузчик стартует когда нажата его кнопка
+  98:main.c        ****  *   переход к основной программе осуществляется после сброса 
+  99:main.c        ****  *   (кнопка должна быть отжата) либо по команде от программатора
+ 100:main.c        ****  *   При этом режиме вывод на кнопку конфигурируется как вход-с подтягом,
+ 101:main.c        ****  *   но при выходе из загрузчика все выставляется по умолчанию
+ 102:main.c        ****  * POWERSAVE-Mode - Startup is separated in two loops
+ 103:main.c        ****  *   which makes power-saving a little easier if no firmware
+ 104:main.c        ****  *   is on the chip. Needs more memory
+ 105:main.c        ****  * BOOTICE-Mode - для зашивки  JTAGICE файла upgrade.ebn в Мегу16.
+ 106:main.c        ****  *   что превращает ее в JTAG отладчик. Разумеется нужно добавить весь необходимый
+ 107:main.c        ****  *   обвяз на кристалл для этого. И частота должна быть везде прописана как 7372800
+ 108:main.c        ****  *   в F_CPU Для совместимости с родной прошивкой JTAG ICE
+ 109:main.c        ****  * WAIT-mode Bootloader ожидает команды на вход, если ее не было в течении промежутка времени
+ 110:main.c        ****  *   (который настраивается) то проихсодит переход к основной программе.
+ 111:main.c        ****  */
+ 112:main.c        **** //#define START_SIMPLE
+ 113:main.c        **** #define START_WAIT
+ 114:main.c        **** //#define START_POWERSAVE
+ 115:main.c        **** //#define START_BOOTICE
+ 116:main.c        **** 
+ 117:main.c        **** /* Команда для входа в загрузчик в START_WAIT */
+ 118:main.c        **** #define START_WAIT_UARTCHAR 'S'
+ 119:main.c        **** 
+ 120:main.c        **** /* Выдержка для START_WAIT mode ( t = WAIT_TIME * 10ms ) */
+ 121:main.c        **** #define WAIT_VALUE 400 /* сейчас: 300*10ms = 3000ms = 3sec */
+ 122:main.c        **** 
+ 123:main.c        **** /*
+ 124:main.c        ****  * enable/disable readout of fuse and lock-bits
+ 125:main.c        ****  * (AVRPROG has to detect the AVR correctly by device-code
+ 126:main.c        ****  * to show the correct information).
+ 127:main.c        ****  */
+ 128:main.c        **** //#define ENABLEREADFUSELOCK
+ 129:main.c        **** 
+ 130:main.c        **** /* enable/disable write of lock-bits
+ 131:main.c        ****  * WARNING: lock-bits can not be reseted by bootloader (as far as I know)
+ 132:main.c        ****  * Only protection no unprotection, "chip erase" from bootloader only
+ 133:main.c        ****  * clears the flash but does no real "chip erase" (this is not possible
+ 134:main.c        ****  * with a bootloader as far as I know)
+ 135:main.c        ****  * Keep this undefined!
+ 136:main.c        ****  */
+ 137:main.c        **** //#define WRITELOCKBITS
+ 138:main.c        **** 
+ 139:main.c        **** /*
+ 140:main.c        ****  * define the following if the bootloader should not output
+ 141:main.c        ****  * itself at flash read (will fake an empty boot-section)
+ 142:main.c        ****  */
+ 143:main.c        **** //#define READ_PROTECT_BOOTLOADER 
+ 144:main.c        **** 
+ 145:main.c        **** #define VERSION_HIGH '0'
+ 146:main.c        **** #define VERSION_LOW  '8'
+ 147:main.c        **** 
+ 148:main.c        **** #define GET_LOCK_BITS           0x0001
+ 149:main.c        **** #define GET_LOW_FUSE_BITS       0x0000
+ 150:main.c        **** #define GET_HIGH_FUSE_BITS      0x0003
+ 151:main.c        **** #define GET_EXTENDED_FUSE_BITS  0x0002
+ 152:main.c        **** 
+ 153:main.c        **** /* Расчет делителя частоты для USART*/
+ 154:main.c        **** #ifdef UART_DOUBLESPEED
+ 155:main.c        **** 
+ 156:main.c        **** 	#define UART_CALC_BAUDRATE(baudRate) ((uint32_t)((F_CPU) + ((uint32_t)baudRate * 4UL)) / ((uint32_
+ 157:main.c        **** 
+ 158:main.c        **** #else
+ 159:main.c        **** 
+ 160:main.c        **** 	#define UART_CALC_BAUDRATE(baudRate) ((uint32_t)((F_CPU) + ((uint32_t)baudRate * 8UL)) / ((uint32_
+ 161:main.c        **** 
+ 162:main.c        **** #endif
+ 163:main.c        **** 
+ 164:main.c        **** 
+ 165:main.c        **** #include <stdint.h>
+ 166:main.c        **** #include <avr/io.h>
+ 167:main.c        **** #include <avr/wdt.h>
+ 168:main.c        **** #include <avr/boot.h>
+ 169:main.c        **** #include <avr/pgmspace.h>
+ 170:main.c        **** #include <avr/eeprom.h>
+ 171:main.c        **** #include <avr/interrupt.h>
+ 172:main.c        **** #include <util/delay.h>
+ 173:main.c        **** 
+ 174:main.c        **** #include "chipdef.h"
+ 175:main.c        **** 
+ 176:main.c        **** uint8_t gBuffer[SPM_PAGESIZE];
+ 177:main.c        **** 
+ 178:main.c        **** #if defined(BOOTLOADERHASNOVECTORS)
+ 179:main.c        **** 	#warning "This Bootloader does not link interrupt vectors - see makefile"
+ 180:main.c        **** 	/* make the linker happy - it wants to see __vector_default */
+ 181:main.c        **** 	// void __vector_default(void) { ; }
+ 182:main.c        **** 	void __vector_default(void) { ; }
+  97               	ogue start */
+  99               	.LM1:
+ 100               		ret
+ 102               	.Lscope1:
+ 105 0000 0895      	send_boot:
+ 107               	.LM2:
+ 108               	.LFBB2:
+ 109               	/* prologue: function */
+ 110               	/* frame size = 0 */
+ 183:main.c        **** T_STATUS & (1<<UART_TXREADY)));
+ 184:main.c        **** 	UART_DATA = data;
+ 185:main.c        **** }
+ 186:main.c        **** 
+ 187:main.c        **** static uint8_t recvchar(void)
+ 188:main.c        **** {
+ 189:main.c        **** 	while (!(UART_STATUS & (1<<UART_RXREADY)));
+ 190:main.c        **** 	return UART_DATA;
+ 191:main.c        **** }
+ 192:main.c        **** 
+ 193:main.c        **** static inline void eraseFlash(void)
+ 194:main.c        **** {
+ 195:main.c        **** 	// erase only main section (bootloader protection)
+ 196:main.c        **** 	uint32_t addr = 0;
+ 197:main.c        **** 	while (APP_END > addr) 
+ 198:main.c        **** 		{
+ 199:main.c        **** 		boot_page_erase(addr);		// Perform page erase
+ 200:main.c        **** 		boot_spm_busy_wait();		// Wait until the memory is erased.
+ 201:main.c        **** 		addr += SPM_PAGESIZE;
+ 202:main.c        **** 		}
+ 203:main.c        **** 	boot_rww_enable();
+ 204:main.c        **** }
+ 205:main.c        **** 
+ 206:main.c        **** static inline void recvBuffer(pagebuf_t size)
+ 207:main.c        **** {
+ 208:main.c        **** 	pagebuf_t cnt;
+ 209:main.c        **** 	uint8_t *tmp = gBuffer;
+ 210:main.c        **** 
+ 211:main.c        **** 	for (cnt = 0; cnt < sizeof(gBuffer); cnt++) 
+ 212:main.c        **** 		{
+ 213:main.c        **** 		*tmp++ = (cnt < size) ? recvchar() : 0xFF;
+ 214:main.c        **** 		}
+ 215:main.c        **** }
+ 216:main.c        **** 
+ 217:main.c        **** static inline uint16_t writeFlashPage(uint16_t waddr, pagebuf_t size)
+ 218:main.c        **** {
+ 219:main.c        **** 	uint32_t pagestart = (uint32_t)waddr<<1;
+ 220:main.c        **** 	uint32_t baddr = pagestart;
+ 221:main.c        **** 	uint16_t data;
+ 222:main.c        **** 	uint8_t *tmp = gBuffer;
+ 223:main.c        **** 
+ 224:main.c        **** 	do 
+ 225:main.c        **** 		{
+ 226:main.c        **** 		data = *tmp++;
+ 227:main.c        **** 		data |= *tmp++ << 8;
+ 228:main.c        **** 		boot_page_fill(baddr, data);	// call asm routine.
+ 229:main.c        **** 
+ 230:main.c        **** 		baddr += 2;			// Select next word in memory
+ 231:main.c        **** 		size -= 2;			// Reduce number of bytes to write by two
+ 232:main.c        **** 		} 
+ 233:main.c        **** 	while (size);				// Loop until all bytes written
+ 234:main.c        **** 
+ 235:main.c        **** 	boot_page_write(pagestart);
+ 236:main.c        **** 	boot_spm_busy_wait();
+ 237:main.c        **** 	boot_rww_enable();		// Re-enable the RWW section
+ 238:main.c        **** 
+ 239:main.c        **** 	return baddr>>1;
+ 240:main.c        **** }
+ 241:main.c        **** 
+ 242:main.c        **** static inline uint16_t writeEEpromPage(uint16_t address, pagebuf_t size)
+ 243:main.c        **** {
+ 244:main.c        **** 	uint8_t *tmp = gBuffer;
+ 245:main.c        **** 
+ 246:main.c        **** 	do 
+ 247:main.c        **** 		{
+ 248:main.c        **** 		eeprom_write_byte( (uint8_t*)address, *tmp++ );
+ 249:main.c        **** 		address++;			// Select next byte
+ 250:main.c        **** 		size--;				// Decreas number of bytes to write
+ 251:main.c        **** 		}
+ 252:main.c        **** 	while (size);				// Loop until all bytes written
+ 253:main.c        **** 
+ 254:main.c        **** 	// eeprom_busy_wait();
+ 255:main.c        **** 
+ 256:main.c        **** 	return address;
+ 257:main.c        **** }
+ 258:main.c        **** 
+ 259:main.c        **** static inline uint16_t readFlashPage(uint16_t waddr, pagebuf_t size)
+ 260:main.c        **** {
+ 261:main.c        **** 	uint32_t baddr = (uint32_t)waddr<<1;
+ 262:main.c        **** 	uint16_t data;
+ 263:main.c        **** 
+ 264:main.c        **** 	do 
+ 265:main.c        **** 	{
+ 266:main.c        **** 
+ 267:main.c        **** #ifndef READ_PROTECT_BOOTLOADER
+ 268:main.c        **** #warning "Bootloader not read-protected"
+ 269:main.c        **** 
+ 270:main.c        **** 	#if defined(RAMPZ)
+ 271:main.c        **** 		data = pgm_read_word_far(baddr);
+ 272:main.c        **** 	#else
+ 273:main.c        **** 		data = pgm_read_word_near(baddr);
+ 274:main.c        **** 	#endif
+ 275:main.c        **** 
+ 276:main.c        **** #else
+ 277:main.c        **** 		// don't read bootloader
+ 278:main.c        **** 		if ( baddr < APP_END ) 
+ 279:main.c        **** 		{
+ 280:main.c        **** 		#if defined(RAMPZ)
+ 281:main.c        **** 			data = pgm_read_word_far(baddr);
+ 282:main.c        **** 		#else
+ 283:main.c        **** 			data = pgm_read_word_near(baddr);
+ 284:main.c        **** 		#endif
+ 285:main.c        **** 		}
+ 286:main.c        **** 		else 
+ 287:main.c        **** 		{
+ 288:main.c        **** 		data = 0xFFFF; // fake empty
+ 289:main.c        **** 		}
+ 290:main.c        **** #endif
+ 291:main.c        **** 		sendchar(data);			// send LSB
+ 292:main.c        **** 		sendchar((data >> 8));		// send MSB
+ 293:main.c        **** 		baddr += 2;			// Select next word in memory
+ 294:main.c        **** 		size -= 2;			// Subtract two bytes from number of bytes to read
+ 295:main.c        **** 	} 
+ 296:main.c        **** 	while (size);				// Repeat until block has been read
+ 297:main.c        **** 	return baddr>>1;
+ 298:main.c        **** }
+ 299:main.c        **** 
+ 300:main.c        **** static inline uint16_t readEEpromPage(uint16_t address, pagebuf_t size)
+ 301:main.c        **** {
+ 302:main.c        **** 	do 
+ 303:main.c        **** 	{
+ 304:main.c        **** 	sendchar( eeprom_read_byte( (uint8_t*)address ) );
+ 305:main.c        **** 	address++;
+ 306:main.c        **** 	size--;				// Decrease number of bytes to read
+ 307:main.c        **** 	} 
+ 308:main.c        **** 	while (size);				// Repeat until block has been read
+ 309:main.c        **** 
+ 310:main.c        **** 	return address;
+ 311:main.c        **** }
+ 312:main.c        **** 
+ 313:main.c        **** #if defined(ENABLEREADFUSELOCK)
+ 314:main.c        **** static uint8_t read_fuse_lock(uint16_t addr)
+ 315:main.c        **** {
+ 316:main.c        **** 	uint8_t mode = (1<<BLBSET) | (1<<SPMEN);
+ 317:main.c        **** 	uint8_t retval;
+ 318:main.c        **** 
+ 319:main.c        **** 	asm volatile
+ 320:main.c        **** 	(
+ 321:main.c        **** 		"movw r30, %3\n\t"		/* Z to addr */ \
+ 322:main.c        **** 		"sts %0, %2\n\t"		/* set mode in SPM_REG */ \
+ 323:main.c        **** 		"lpm\n\t"			/* load fuse/lock value into r0 */ \
+ 324:main.c        **** 		"mov %1,r0\n\t"			/* save return value */ \
+ 325:main.c        **** 		: "=m" (SPM_REG),
+ 326:main.c        **** 		  "=r" (retval)
+ 327:main.c        **** 		: "r" (mode),
+ 328:main.c        **** 		  "r" (addr)
+ 329:main.c        **** 		: "r30", "r31", "r0"
+ 330:main.c        **** 	);
+ 331:main.c        **** 	return retval;
+ 332:main.c        **** }
+ 333:main.c        **** #endif
+ 334:main.c        **** 
+ 335:main.c        **** static void send_boot(void)
+ 336:main.c        **** {
+ 337:main.c        **** 	sendchar('A');
+ 338:main.c        **** 	sendchar('V');
+ 339:main.c        **** 	sendchar('R');
+ 340:main.c        **** 	sendchar('B');
+ 111               	.LBB125:
+ 113               	.LM3:
+ 114               		sbis 43-32,5
+ 115               		rjmp .L4
+ 117               	.LM4:
+ 118               		ldi r24,lo8(65)
+ 119               		out 44-32,r24
+ 120               	.L5:
+ 121 0002 5D9B      	.LBE125:
+ 122 0004 00C0      	.LBE124:
+ 123               	.LBB126:
+ 124               	.LBB127:
+ 126 0008 8CB9      	.LM5:
+ 127               		sbis 43-32,5
+ 128               		rjmp .L5
+ 130               	.LM6:
+ 131               		ldi r24,lo8(86)
+ 132               		out 44-32,r24
+ 133               	.L6:
+ 134 000a 5D9B      	.LBE127:
+ 135 000c 00C0      	.LBE126:
+ 136               	.LBB128:
+ 137               	.LBB129:
+ 139 0010 8CB9      	.LM7:
+ 140               		sbis 43-32,5
+ 141               		rjmp .L6
+ 143               	.LM8:
+ 144               		ldi r24,lo8(82)
+ 145               		out 44-32,r24
+ 146               	.L7:
+ 147 0012 5D9B      	.LBE129:
+ 148 0014 00C0      	.LBE128:
+ 149               	.LBB130:
+ 150               	.LBB131:
+ 152 0018 8CB9      	.LM9:
+ 153               		sbis 43-32,5
+ 154               		rjmp .L7
+ 156               	.LM10:
+ 157               		ldi r24,lo8(66)
+ 158               		out 44-32,r24
+ 159               	.L8:
+ 160 001a 5D9B      	.LBE131:
+ 161 001c 00C0      	.LBE130:
+ 162               	.LBB132:
+ 163               	.LBB133:
+ 165 0020 8CB9      	.LM11:
+ 166               		sbis 43-32,5
+ 167               		rjmp .L8
+ 169               	.LM12:
+ 170               		ldi r24,lo8(79)
+ 171               		out 44-32,r24
+ 172               	.L9:
+ 173 0022 5D9B      	.LBE133:
+ 174 0024 00C0      	.LBE132:
+ 175               	.LBB134:
+ 176               	.LBB135:
+ 178 0028 8CB9      	.LM13:
+ 179               		sbis 43-32,5
+ 180               		rjmp .L9
+ 182               	.LM14:
+ 183               		ldi r24,lo8(79)
+ 184               		out 44-32,r24
+ 185               	.L10:
+ 186 002a 5D9B      	.LBE135:
+ 187 002c 00C0      	.LBE134:
+ 188               	.LBB136:
+ 189               	.LBB137:
+ 191 0030 8CB9      	.LM15:
+ 192               		sbis 43-32,5
+ 193               		rjmp .L10
+ 195               	.LM16:
+ 196               		ldi r24,lo8(84)
+ 197               		out 44-32,r24
+ 198               	/* epilogue start */
+ 199 0032 5D9B      	.LBE137:
+ 200 0034 00C0      	.LBE136:
+ 202               	.LM17:
+ 203 0036 84E5      		ret
+ 205               	.Lscope2:
+ 207               	.global	main
+ 341:main.c        **** t device = 0, val;
+ 342:main.c        **** 
+ 343:main.c        **** 
+ 344:main.c        **** 
+ 345:main.c        **** #ifdef ENABLE_BOOT_LED	// LED ON
+ 346:main.c        **** 	BIPORT |= (1<<BIPNUM);	
+ 347:main.c        **** 	BIDDR  |= (1<<BIPNUM);
+ 348:main.c        **** #endif
+ 208               	 r4
+ 209               		push r5
+ 210 003a 0895      		push r6
+ 211               		push r7
+ 212               		push r8
+ 213               		push r9
+ 214               		push r10
+ 215               		push r11
+ 216               		push r12
+ 349:main.c        **** 
+ 350:main.c        **** 
+ 351:main.c        **** #ifdef DISABLE_WDT_AT_STARTUP
+ 352:main.c        **** 	#ifdef WDT_OFF_SPECIAL
+ 353:main.c        **** 		#warning "using target specific watchdog_off"
+ 217               	
+ 218               		push r14
+ 219               		push r15
+ 220 003c 2F92      		push r16
+ 221 003e 3F92      		push r17
+ 222 0040 4F92      		push r28
+ 223 0042 5F92      		push r29
+ 224 0044 6F92      	/* prologue: function */
+ 225 0046 7F92      	/* frame size = 0 */
+ 227 004a 9F92      	.LM19:
+ 228 004c AF92      		sbi 50-32,5
+ 230 0050 CF92      	.LM20:
+ 231 0052 DF92      		sbi 49-32,5
+ 233 0056 FF92      	.LM21:
+ 234 0058 0F93      	/* #APP */
+ 235 005a 1F93      	 ;  370 "main.c" 1
+ 236 005c CF93      		cli
+ 237 005e DF93      	 ;  0 "" 2
+ 239               	.LM22:
+ 354:main.c        **** ootloader_wdt_off();
+ 355:main.c        **** 	#else
+ 356:main.c        **** 		cli();
+ 357:main.c        **** 		wdt_reset();
+ 358:main.c        **** 		wdt_disable();
+ 359:main.c        **** 	#endif
+ 360:main.c        **** #endif
+ 240               	r
+ 241               	 ;  0 "" 2
+ 361:main.c        **** f START_POWERSAVE
+ 243               	23:
+ 244               	/* #NOAPP */
+ 245 0062 8D9A      		ldi r24,lo8(24)
+ 362:main.c        **** uint8_t OK = 1;
+ 363:main.c        **** #endif
+ 364:main.c        **** 
+ 365:main.c        **** 	BLDDR  &= ~(1<<BLPNUM);		// set as Input
+ 366:main.c        **** 	BLPORT |= (1<<BLPNUM);		// Enable pullup
+ 367:main.c        **** 
+ 368:main.c        **** 	// Set baud rate
+ 369:main.c        **** 	UART_BAUD_HIGH = (UART_CALC_BAUDRATE(BAUDRATE)>>8) & 0xFF;
+ 370:main.c        **** 	UART_BAUD_LOW = (UART_CALC_BAUDRATE(BAUDRATE) & 0xFF);
+ 246               	#APP */
+ 247               	 ;  372 "main.c" 1
+ 248               		in __tmp_reg__, __SREG__
+ 249               		cli
+ 250 0064 F894      		out 33, r24
+ 251               		out 33, __zero_reg__
+ 371:main.c        **** ART_DOUBLESPEED
+ 252               	_SREG__,__tmp_reg__
+ 253               		
+ 254               	 ;  0 "" 2
+ 256               	.LM24:
+ 372:main.c        **** UART_STATUS = ( 1<<UART_DOUBLE );
+ 257               	OAPP */
+ 258               		cbi 49-32,7
+ 260 0068 88E1      	.LM25:
+ 261               		sbi 50-32,7
+ 263 006a 0FB6      	.LM26:
+ 264 006c F894      		out 64-32,__zero_reg__
+ 266 0070 11BC      	.LM27:
+ 267 0072 0FBE      		ldi r25,lo8(25)
+ 268               		out 41-32,r25
+ 373:main.c        **** endif
+ 374:main.c        **** 
+ 375:main.c        **** 	UART_CTRL = UART_CTRL_DATA;
+ 376:main.c        **** 	UART_CTRL2 = UART_CTRL2_DATA;
+ 377:main.c        **** 	
+ 378:main.c        **** #if defined(START_POWERSAVE)
+ 379:main.c        **** 	/*
+ 380:main.c        **** 		This is an adoption of the Butterfly Bootloader startup-sequence.
+ 270               	2-32,r24
+ 272               	.LM29:
+ 273 0074 8F98      		ldi r24,lo8(-122)
+ 381:main.c        ****  look a little strange but separating the login-loop from
+ 274               	 64-32,r24
+ 275               		ldi r16,lo8(0)
+ 276 0076 979A      		ldi r17,hi8(0)
+ 382:main.c        **** 	the main parser-loop gives a lot a possibilities (timeout, sleep-modes
+ 383:main.c        **** 	    etc.).
+ 384:main.c        **** 	*/
+ 277               	tabn	68,0,478,.LM30-.LFBB3
+ 278               	.LM30:
+ 279 0078 10BC      		clr r14
+ 385:main.c        **** r(;OK;) 
+ 280               	r r15
+ 281               	.LBB138:
+ 282 007a 99E1      	.LBB139:
+ 283 007c 99B9      	.LBB140:
+ 386:main.c        **** 	{
+ 387:main.c        **** 		if ((BLPIN & (1<<BLPNUM))) 
+ 388:main.c        **** 		{
+ 389:main.c        **** 		// jump to main app if pin is not grounded
+ 390:main.c        **** 		BLPORT &= ~(1<<BLPNUM);	// set to default
+ 391:main.c        **** 
+ 284               	141:
+ 286 007e 8AB9      	.Ltext1:
+ 392:main.c        **** fdef UART_DOUBLESPEED
+ 287               	tabn	68,0,105,.LM31-.LFBB3
+ 288               	.LM31:
+ 289 0080 86E8      		ldi r28,lo8(20000)
+ 290 0082 80BD      		ldi r29,hi8(20000)
+ 291 0084 00E0      	.L23:
+ 292 0086 10E0      	.LBE141:
+ 393:main.c        **** 		UART_STATUS &= ~( 1<<UART_DOUBLE );
+ 394:main.c        **** 		#endif
+ 395:main.c        **** 
+ 396:main.c        **** 
+ 397:main.c        **** 		#ifdef ENABLE_BOOT_LED	// LED OFF
+ 398:main.c        **** 		BIPORT &= ~(1<<BIPNUM);	
+ 399:main.c        **** 		BIDDR  &= ~(1<<BIPNUM);
+ 400:main.c        **** 		#endif
+ 401:main.c        **** 
+ 402:main.c        **** 		jump_to_app();		// Jump to application sector
+ 403:main.c        **** 
+ 404:main.c        **** 		} 
+ 405:main.c        **** 		else 
+ 406:main.c        **** 		{
+ 407:main.c        **** 		val = recvchar();
+ 408:main.c        **** 		/* ESC */
+ 409:main.c        **** 			if (val == 0x1B) 
+ 410:main.c        **** 			{
+ 411:main.c        **** 				// AVRPROG connection
+ 412:main.c        **** 				// Wait for signon
+ 413:main.c        **** 				while (val != 'S')
+ 414:main.c        **** 				val = recvchar();
+ 415:main.c        **** 				
+ 416:main.c        **** 				send_boot();			// Report signon
+ 417:main.c        **** 				OK = 0;
+ 418:main.c        **** 			} 
+ 419:main.c        **** 			else 
+ 420:main.c        **** 			{
+ 421:main.c        **** 			sendchar('?');
+ 422:main.c        **** 			}
+ 423:main.c        **** 	    }
+ 424:main.c        **** 		// Power-Save code here
+ 425:main.c        **** 	}
+ 426:main.c        **** 
+ 427:main.c        **** #elif defined(START_SIMPLE)
+ 428:main.c        **** 
+ 429:main.c        **** 	if ((BLPIN & (1<<BLPNUM))) {
+ 430:main.c        **** 		// jump to main app if pin is not grounded
+ 431:main.c        **** 		BLPORT &= ~(1<<BLPNUM);		// set to default	
+ 432:main.c        **** 			
+ 433:main.c        **** 	#ifdef UART_DOUBLESPEED
+ 434:main.c        **** 		UART_STATUS &= ~( 1<<UART_DOUBLE );
+ 435:main.c        **** 	#endif
+ 436:main.c        **** 
+ 437:main.c        **** 		#ifdef ENABLE_BOOT_LED	// LED OFF
+ 438:main.c        **** 		BIPORT &= ~(1<<BIPNUM);	
+ 439:main.c        **** 		BIDDR  &= ~(1<<BIPNUM);
+ 440:main.c        **** 		#endif
+ 441:main.c        **** 
+ 442:main.c        **** 		jump_to_app();			// Jump to application sector
+ 443:main.c        **** 	}
+ 444:main.c        **** 
+ 445:main.c        **** #elif defined(START_WAIT)
+ 446:main.c        **** 
+ 447:main.c        **** 	uint16_t cnt = 0;
+ 448:main.c        **** 
+ 449:main.c        **** 	while (1) {
+ 450:main.c        **** 		if (UART_STATUS & (1<<UART_RXREADY))
+ 451:main.c        **** 			if (UART_DATA == START_WAIT_UARTCHAR)
+ 452:main.c        **** 				break;
+ 453:main.c        **** 
+ 454:main.c        **** 		if (cnt++ >= WAIT_VALUE) {
+ 455:main.c        **** 			BLPORT &= ~(1<<BLPNUM);		// set to default
+ 456:main.c        **** 
+ 457:main.c        **** 
+ 458:main.c        **** 			#ifdef ENABLE_BOOT_LED	// LED OFF
+ 459:main.c        **** 			BIPORT &= ~(1<<BIPNUM);	
+ 460:main.c        **** 			BIDDR  &= ~(1<<BIPNUM);
+ 461:main.c        **** 			#endif
+ 462:main.c        **** 			jump_to_app();			// Jump to application sector
+ 463:main.c        **** 		}
+ 464:main.c        **** 
+ 465:main.c        **** 		_delay_ms(10);
+ 466:main.c        **** 	}
+ 467:main.c        **** 	send_boot();
+ 468:main.c        **** 
+ 469:main.c        **** #elif defined(START_BOOTICE)
+ 470:main.c        **** #warning "BOOTICE mode - no startup-condition"
+ 471:main.c        **** 
+ 472:main.c        **** #else
+ 473:main.c        **** #error "Select START_ condition for bootloader in main.c"
+ 474:main.c        **** #endif
+ 475:main.c        **** 
+ 476:main.c        **** 
+ 477:main.c        **** 	for(;;) 
+ 478:main.c        **** 	{
+ 293               	0:
+ 294               	.LBE139:
+ 295 0088 EE24      	.LBE138:
+ 297               	.Ltext2:
+ 299               	.LM32:
+ 300               		sbis 43-32,7
+ 301               		rjmp .L20
+   1:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    Copyright (c) 2007 Joerg Wunsch
+   3:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    All rights reserved.
+   4:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+   5:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    Redistribution and use in source and binary forms, with or without
+   6:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    modification, are permitted provided that the following conditions are met:
+   7:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+   8:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Redistributions of source code must retain the above copyright
+   9:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer.
+  10:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  11:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Redistributions in binary form must reproduce the above copyright
+  12:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer in
+  13:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      the documentation and/or other materials provided with the
+  14:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      distribution.
+  15:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  16:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Neither the name of the copyright holders nor the names of
+  17:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      contributors may be used to endorse or promote products derived
+  18:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      from this software without specific prior written permission.
+  19:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  20:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  31:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  32:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /* $Id: delay_basic.h,v 1.1 2007/05/13 21:23:20 joerg_wunsch Exp $ */
+  33:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  34:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #ifndef _UTIL_DELAY_BASIC_H_
+  35:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #define _UTIL_DELAY_BASIC_H_ 1
+  36:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  37:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #include <inttypes.h>
+  38:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  39:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \file */
+  40:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \defgroup util_delay_basic <util/delay_basic.h>: Basic busy-wait delay loops
+  41:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     \code
+  42:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     #include <util/delay_basic.h>
+  43:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     \endcode
+  44:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  45:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     The functions in this header file implement simple delay loops
+  46:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     that perform a busy-waiting.  They are typically used to
+  47:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     facilitate short delays in the program execution.  They are
+  48:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     implemented as count-down loops with a well-known CPU cycle
+  49:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     count per loop iteration.  As such, no other processing can
+  50:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     occur simultaneously.  It should be kept in mind that the
+  51:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     functions described here do not disable interrupts.
+  52:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  53:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     In general, for long delays, the use of hardware timers is
+  54:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     much preferrable, as they free the CPU, and allow for
+  55:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     concurrent processing of other events while the timer is
+  56:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     running.  However, in particular for very short delays, the
+  57:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     overhead of setting up a hardware timer is too much compared
+  58:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     to the overall delay time.
+  59:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  60:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Two inline functions are provided for the actual delay algorithms.
+  61:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  62:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** */
+  63:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  64:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #if !defined(__DOXYGEN__)
+  65:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** static inline void _delay_loop_1(uint8_t __count) __attribute__((always_inline));
+  66:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** static inline void _delay_loop_2(uint16_t __count) __attribute__((always_inline));
+  67:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #endif
+  68:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  69:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  70:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  71:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Delay loop using an 8-bit counter \c __count, so up to 256
+  72:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     iterations are possible.  (The value 256 would have to be passed
+  73:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     as 0.)  The loop executes three CPU cycles per iteration, not
+  74:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     including the overhead the compiler needs to setup the counter
+  75:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     register.
+  76:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  77:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to 768 microseconds
+  78:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     can be achieved.
+  79:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** */
+  80:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** void
+  81:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** _delay_loop_1(uint8_t __count)
+  82:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** {
+  83:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	__asm__ volatile (
+  84:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		"1: dec %0" "\n\t"
+  85:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		"brne 1b"
+  86:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		: "=r" (__count)
+  87:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		: "0" (__count)
+  88:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	);
+  89:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** }
+  90:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  91:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  92:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  93:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Delay loop using a 16-bit counter \c __count, so up to 65536
+  94:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     iterations are possible.  (The value 65536 would have to be
+  95:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     passed as 0.)  The loop executes four CPU cycles per iteration,
+  96:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     not including the overhead the compiler requires to setup the
+  97:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     counter register pair.
+  98:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  99:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to about 262.1
+ 100:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     milliseconds can be achieved.
+ 101:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****  */
+ 102:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** void
+ 103:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** _delay_loop_2(uint16_t __count)
+ 104:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** {
+ 105:c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	__asm__ volatile (
+ 303               	 r24,44-32
+ 304               		cpi r24,lo8(83)
+ 305 008c C0E2      		breq .L21
+ 306 008e DEE4      	.L20:
+ 308               	.LM34:
+ 309               		ldi r18,hi8(400)
+ 310               		cpi r16,lo8(400)
+ 311               		cpc r17,r18
+ 312               		brlo .L22
+ 314               	.LM35:
+ 315               		cbi 50-32,7
+ 317 0092 00C0      	.LM36:
+ 318               		cbi 50-32,5
+ 320 0094 8CB1      	.LM37:
+ 321 0096 8335      		cbi 49-32,5
+ 323               	.LM38:
+ 324               		movw r30,r14
+ 325               		icall
+ 326 009a 21E0      	.L22:
+ 328 009e 1207      	.LM39:
+ 329 00a0 00F0      		subi r16,lo8(-(1))
+ 330               		sbci r17,hi8(-(1))
+ 331               	.LBB145:
+ 332 00a2 9798      	.LBB144:
+ 333               	.LBB143:
+ 334               	.LBB142:
+ 336               	.Ltext3:
+ 338 00a6 8D98      	.LM40:
+ 339               		movw r24,r28
+ 340               	/* #APP */
+ 341 00a8 F701      	 ;  105 "c:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 342 00aa 0995      		1: sbiw r24,1
+ 343               		brne 1b
+ 344               	 ;  0 "" 2
+ 345               	/* #NOAPP */
+ 346 00ac 0F5F      		rjmp .L23
+ 347 00ae 1F4F      	.L21:
+ 348               	.LBE142:
+ 349               	.LBE143:
+ 350               	.LBE144:
+ 351               	.LBE145:
+ 353               	.Ltext4:
+ 355               	.LM41:
+ 356 00b0 CE01      		call send_boot
+ 357               		clr r5
+ 358               		clr r10
+ 359 00b2 0197      		clr r11
+ 360 00b4 01F4      	.LBB146:
+ 361               	.LBB147:
+ 363 00b6 00C0      	.LM42:
+ 364               		ldi r26,lo8(13)
+ 365               		mov r12,r26
+ 366               	.LBE147:
+ 367               	.LBE146:
+ 368               	.LBB149:
+ 369               	.LBB150:
+ 370               		ldi r31,lo8(3)
+ 479:main.c        **** 
+ 480:main.c        **** 		{
+ 481:main.c        **** 			sendchar('Y');			// Autoincrement is quicker
+ 482:main.c        **** 
+ 483:main.c        **** 		//write address
+ 371               	ldi r30,lo8(24)
+ 372               		mov r2,r30
+ 373 00b8 0E94 0000 		mov r3,__zero_reg__
+ 374 00bc 5524      	.L153:
+ 375 00be AA24      	.LBB152:
+ 376 00c0 BB24      	.LBB153:
+ 378               	.LM44:
+ 379               		sbis 43-32,7
+ 380               		rjmp .L153
+ 382 00c4 CA2E      	.LM45:
+ 383               		in r25,44-32
+ 384               	.LBE153:
+ 385               	.LBE152:
+ 387 00c6 F3E0      	.LM46:
+ 388 00c8 4F2E      		cpi r25,lo8(97)
+ 389               		brne .L25
+ 390               	.L90:
+ 484:main.c        **** {
+ 485:main.c        **** 		val = recvchar();
+ 486:main.c        **** 		// Autoincrement?
+ 487:main.c        **** 		if (val == 'a') 
+ 488:main.c        **** 		{
+ 489:main.c        **** 			sendchar('Y');			// Autoincrement is quicker
+ 490:main.c        **** 
+ 491:main.c        **** 		//write address
+ 492:main.c        **** 		} 
+ 493:main.c        **** 		else if (val == 'A') 
+ 494:main.c        **** 		{
+ 495:main.c        **** 			address = recvchar();		//read address 8 MSB
+ 496:main.c        **** 			address = (address<<8) | recvchar();
+ 497:main.c        **** 			sendchar('\r');
+ 498:main.c        **** 
+ 499:main.c        **** 		// Buffer load support
+ 500:main.c        **** 		} 
+ 501:main.c        **** 		else if (val == 'b') 
+ 502:main.c        **** 		{
+ 503:main.c        **** 			sendchar('Y');					// Report buffer load supported
+ 504:main.c        **** 			sendchar((sizeof(gBuffer) >> 8) & 0xFF);	// Report buffer size in bytes
+ 505:main.c        **** 			sendchar(sizeof(gBuffer) & 0xFF);
+ 506:main.c        **** 
+ 507:main.c        **** 		// Start buffer load
+ 508:main.c        **** 		} 
+ 509:main.c        **** 		else if (val == 'B') 
+ 510:main.c        **** 		{
+ 511:main.c        **** 			pagebuf_t size;
+ 512:main.c        **** 			size = recvchar() << 8;				// Load high byte of buffersize
+ 513:main.c        **** 			size |= recvchar();				// Load low byte of buffersize
+ 514:main.c        **** 			val = recvchar();				// Load memory type ('E' or 'F')
+ 515:main.c        **** 			recvBuffer(size);
+ 516:main.c        **** 
+ 517:main.c        **** 			if (device == DEVTYPE) 
+ 518:main.c        **** 			{
+ 519:main.c        **** 				if (val == 'F') 
+ 520:main.c        **** 				{
+ 521:main.c        **** 				address = writeFlashPage(address, size);
+ 522:main.c        **** 				} 
+ 523:main.c        **** 				else if (val == 'E') 
+ 524:main.c        **** 				{
+ 525:main.c        **** 				address = writeEEpromPage(address, size);
+ 526:main.c        **** 				}
+ 527:main.c        **** 				sendchar('\r');
+ 528:main.c        **** 			} 
+ 529:main.c        **** 			else 
+ 530:main.c        **** 			{
+ 531:main.c        **** 			sendchar(0);
+ 532:main.c        **** 			}
+ 533:main.c        **** 
+ 534:main.c        **** 		// Block read
+ 535:main.c        **** 		} 
+ 536:main.c        **** 		else if (val == 'g') 
+ 537:main.c        **** 		{
+ 538:main.c        **** 			pagebuf_t size;
+ 539:main.c        **** 			size = recvchar() << 8;				// Load high byte of buffersize
+ 540:main.c        **** 			size |= recvchar();				// Load low byte of buffersize
+ 541:main.c        **** 			val = recvchar();				// Get memtype
+ 542:main.c        **** 
+ 543:main.c        **** 			if (val == 'F') 
+ 544:main.c        **** 			{
+ 545:main.c        **** 			address = readFlashPage(address, size);
+ 546:main.c        **** 			} 
+ 547:main.c        **** 			else if (val == 'E') 
+ 548:main.c        **** 			{
+ 549:main.c        **** 			address = readEEpromPage(address, size);
+ 550:main.c        **** 			}
+ 551:main.c        **** 
+ 552:main.c        **** 		// Chip erase
+ 553:main.c        ****  		} 
+ 554:main.c        **** 		else if (val == 'e') 
+ 555:main.c        **** 		{
+ 556:main.c        **** 		if (device == DEVTYPE) 
+ 557:main.c        **** 			{
+ 558:main.c        **** 			eraseFlash();
+ 559:main.c        **** 			}
+ 560:main.c        **** 		sendchar('\r');
+ 561:main.c        **** 
+ 562:main.c        **** 		// Exit upgrade
+ 563:main.c        **** 		} 
+ 564:main.c        **** 		else if (val == 'E') 
+ 565:main.c        **** 		{
+ 566:main.c        **** 		wdt_enable(EXIT_WDT_TIME); // Enable Watchdog Timer to give reset
+ 567:main.c        **** 		sendchar('\r');
+ 568:main.c        **** 
+ 569:main.c        **** 		#ifdef WRITELOCKBITS
+ 570:main.c        **** 			#warning "Extension 'WriteLockBits' enabled"
+ 571:main.c        **** 			// TODO: does not work reliably
+ 572:main.c        **** 			// write lockbits
+ 573:main.c        **** 			} 
+ 574:main.c        **** 			else if (val == 'l') 
+ 575:main.c        **** 			{
+ 576:main.c        **** 			if (device == DEVTYPE) 
+ 391               	stabn	68,0,187,.LM47-.LFBB3
+ 392               	.LM47:
+ 393 00ca E8E1      		sbis 43-32,5
+ 394 00cc 2E2E      		rjmp .L90
+ 396               	.LM48:
+ 397               		ldi r22,lo8(89)
+ 398               		rjmp .L154
+ 399               	.L25:
+ 400               	.LBE155:
+ 401 00d0 5F9B      	.LBE154:
+ 403               	.LM49:
+ 404               		cpi r25,lo8(65)
+ 405 00d4 9CB1      		brne .L27
+ 406               	.L91:
+ 407               	.LBB156:
+ 408               	.LBB157:
+ 410 00d6 9136      	.LM50:
+ 411 00d8 01F4      		sbis 43-32,7
+ 412               		rjmp .L91
+ 414               	.LM51:
+ 415               		in r25,44-32
+ 416               	.L29:
+ 417 00da 5D9B      	.LBE157:
+ 418 00dc 00C0      	.LBE156:
+ 419               	.LBB158:
+ 420               	.LBB159:
+ 422 00e0 00C0      	.LM52:
+ 423               		sbis 43-32,7
+ 424               		rjmp .L29
+ 426               	.LM53:
+ 427               		in r24,44-32
+ 428 00e2 9134      	.L30:
+ 429 00e4 01F4      	.LBE159:
+ 430               	.LBE158:
+ 431               	.LBB160:
+ 432               	.LBB148:
+ 434               	.LM54:
+ 435 00e6 5F9B      		sbis 43-32,5
+ 436 00e8 00C0      		rjmp .L30
+ 437               	.LBE148:
+ 438               	.LBE160:
+ 440               	.LM55:
+ 441               		mov r7,r25
+ 442               		clr r6
+ 443               		mov r10,r24
+ 444               		clr r11
+ 445               		or r10,r6
+ 446               		or r11,r7
+ 447 00ec 5F9B      		rjmp .L159
+ 448 00ee 00C0      	.L27:
+ 450               	.LM56:
+ 451 00f0 8CB1      		cpi r25,lo8(98)
+ 452               		brne .L31
+ 453               	.L92:
+ 454               	.LBB161:
+ 455               	.LBB162:
+ 457               	.LM57:
+ 458               		sbis 43-32,5
+ 459 00f2 5D9B      		rjmp .L92
+ 461               	.LM58:
+ 462               		ldi r24,lo8(89)
+ 463               		out 44-32,r24
+ 464               	.L33:
+ 465 00f6 792E      	.LBE162:
+ 466 00f8 6624      	.LBE161:
+ 467 00fa A82E      	.LBB163:
+ 468 00fc BB24      	.LBB164:
+ 470 0100 B728      	.LM59:
+ 471 0102 00C0      		sbis 43-32,5
+ 472               		rjmp .L33
+ 474               	.LM60:
+ 475 0104 9236      		out 44-32,__zero_reg__
+ 476 0106 01F4      	.L34:
+ 477               	.LBE164:
+ 478               	.LBE163:
+ 479               	.LBB165:
+ 480               	.LBB166:
+ 482 0108 5D9B      	.LM61:
+ 483 010a 00C0      		sbis 43-32,5
+ 484               		rjmp .L34
+ 486 010c 89E5      	.LM62:
+ 487 010e 8CB9      		ldi r30,lo8(-128)
+ 488               		rjmp .L156
+ 489               	.L31:
+ 490               	.LBE166:
+ 491               	.LBE165:
+ 493               	.LM63:
+ 494               		cpi r25,lo8(66)
+ 495 0110 5D9B      		breq .+2
+ 496 0112 00C0      		rjmp .L35
+ 497               	.L96:
+ 498               	.LBB167:
+ 499 0114 1CB8      	.LBB168:
+ 500               	.LBB169:
+ 502               	.LM64:
+ 503               		sbis 43-32,7
+ 504               		rjmp .L96
+ 506               	.LM65:
+ 507 0116 5D9B      		in r24,44-32
+ 508 0118 00C0      	.L37:
+ 509               	.LBE169:
+ 510               	.LBE168:
+ 511 011a E0E8      	.LBB170:
+ 512 011c 00C0      	.LBB171:
+ 514               	.LM66:
+ 515               		sbis 43-32,7
+ 516               		rjmp .L37
+ 518 011e 9234      	.LM67:
+ 519 0120 01F0      		in r13,44-32
+ 520 0122 00C0      	.L38:
+ 521               	.LBE171:
+ 522               	.LBE170:
+ 523               	.LBB172:
+ 524               	.LBB173:
+ 526               	.LM68:
+ 527 0124 5F9B      		sbis 43-32,7
+ 528 0126 00C0      		rjmp .L38
+ 530               	.LM69:
+ 531 0128 8CB1      		in r18,44-32
+ 532               		ldi r24,lo8(0)
+ 533               		ldi r30,lo8(gBuffer)
+ 534               		ldi r31,hi8(gBuffer)
+ 535               	.L41:
+ 536               	.LBE173:
+ 537               	.LBE172:
+ 538               	.LBB174:
+ 539 012a 5F9B      	.LBB175:
+ 541               	.LM70:
+ 542               		cp r24,r13
+ 543 012e DCB0      		brlo .L95
+ 544               		ldi r25,lo8(-1)
+ 545               		rjmp .L40
+ 546               	.L95:
+ 547               	.LBB176:
+ 548               	.LBB177:
+ 550               	.LM71:
+ 551 0130 5F9B      		sbis 43-32,7
+ 552 0132 00C0      		rjmp .L95
+ 554               	.LM72:
+ 555 0134 2CB1      		in r25,44-32
+ 556 0136 80E0      	.L40:
+ 557 0138 E0E0      	.LBE177:
+ 558 013a F0E0      	.LBE176:
+ 560               	.LM73:
+ 561               		st Z+,r25
+ 563               	.LM74:
+ 564               		subi r24,lo8(-(1))
+ 565               		cpi r24,lo8(-128)
+ 566 013c 8D15      		brne .L41
+ 567 013e 00F0      	.LBE175:
+ 568 0140 9FEF      	.LBE174:
+ 570               	.LM75:
+ 571               		ldi r31,lo8(117)
+ 572               		cp r5,r31
+ 573               		breq .+2
+ 574               		rjmp .L94
+ 576 0146 00C0      	.LM76:
+ 577               		cpi r18,lo8(70)
+ 578               		breq .+2
+ 579 0148 9CB1      		rjmp .L43
+ 580               	.LBB178:
+ 581               	.LBB179:
+ 583               	.LM77:
+ 584               		movw r14,r10
+ 585 014a 9193      		ldi r16,lo8(0)
+ 586               		ldi r17,hi8(0)
+ 587               		lsl r14
+ 588 014c 8F5F      		rol r15
+ 589 014e 8038      		rol r16
+ 590 0150 01F4      		rol r17
+ 591               		movw r20,r16
+ 592               		movw r18,r14
+ 593               		ldi r26,lo8(gBuffer)
+ 594               		ldi r27,hi8(gBuffer)
+ 595 0152 F5E7      	.L44:
+ 597 0156 01F0      	.LM78:
+ 598 0158 00C0      		ld r24,X
+ 599               		ldi r25,lo8(0)
+ 601 015a 2634      	.LM79:
+ 602 015c 01F0      		adiw r26,1
+ 603 015e 00C0      		ld r9,X
+ 604               		sbiw r26,1
+ 605               		clr r8
+ 606               		or r24,r8
+ 607               		or r25,r9
+ 609 0162 00E0      	.LM80:
+ 610 0164 10E0      		adiw r26,2
+ 612 0168 FF1C      	.LM81:
+ 613 016a 001F      		ldi r22,lo8(1)
+ 614 016c 111F      		movw r30,r18
+ 615 016e A801      	/* #APP */
+ 616 0170 9701      	 ;  232 "main.c" 1
+ 617 0172 A0E0      		movw  r0, r24
+ 618 0174 B0E0      		sts 87, r22
+ 619               		spm
+ 620               		clr  r1
+ 621               		
+ 622 0176 8C91      	 ;  0 "" 2
+ 624               	.LM82:
+ 625               	/* #NOAPP */
+ 626 017a 1196      		subi r18,lo8(-(2))
+ 627 017c 9C90      		sbci r19,hi8(-(2))
+ 628 017e 1197      		sbci r20,hlo8(-(2))
+ 629 0180 8824      		sbci r21,hhi8(-(2))
+ 631 0184 9929      	.LM83:
+ 632               		ldi r24,lo8(-2)
+ 633               		add r13,r24
+ 635               	.LM84:
+ 636               		brne .L44
+ 638 018a F901      	.LM85:
+ 639               		ldi r22,lo8(5)
+ 640               		movw r30,r14
+ 641 018c 0C01      	/* #APP */
+ 642 018e 6093 5700 	 ;  239 "main.c" 1
+ 643 0192 E895      		sts 87, r22
+ 644 0194 1124      		spm
+ 645               		
+ 646               	 ;  0 "" 2
+ 647               	/* #NOAPP */
+ 648               	.L45:
+ 649               	.LBE179:
+ 651 0198 3F4F      	.LM86:
+ 652 019a 4F4F      		in __tmp_reg__,87-32
+ 653 019c 5F4F      		sbrc __tmp_reg__,0
+ 654               		rjmp .L45
+ 655               	.LBB180:
+ 657 01a0 D80E      	.LM87:
+ 658               		ldi r24,lo8(17)
+ 659               	/* #APP */
+ 660 01a2 01F4      	 ;  241 "main.c" 1
+ 661               		sts 87, r24
+ 662               		spm
+ 663 01a4 65E0      		
+ 664 01a6 F701      	 ;  0 "" 2
+ 666               	.LM88:
+ 667 01a8 6093 5700 	/* #NOAPP */
+ 668 01ac E895      		lsr r21
+ 669               		ror r20
+ 670               		ror r19
+ 671               		ror r18
+ 672               		movw r10,r18
+ 673               		rjmp .L93
+ 674               	.L43:
+ 675               	.LBE180:
+ 676 01ae 07B6      	.LBE178:
+ 678 01b2 00C0      	.LM89:
+ 679               		cpi r18,lo8(69)
+ 680               		brne .L93
+ 681               		mov r15,r13
+ 682 01b4 81E1      		movw r16,r10
+ 683               		ldi r28,lo8(gBuffer)
+ 684               		ldi r29,hi8(gBuffer)
+ 685 01b6 8093 5700 	.L47:
+ 686 01ba E895      	.LBB181:
+ 687               	.LBB182:
+ 689               	.LM90:
+ 690               		ld r22,Y+
+ 691               		movw r24,r16
+ 692 01bc 5695      		call __eewr_byte_m16
+ 694 01c0 3795      	.LM91:
+ 695 01c2 2795      		subi r16,lo8(-(1))
+ 696 01c4 5901      		sbci r17,hi8(-(1))
+ 698               	.LM92:
+ 699               		dec r15
+ 701               	.LM93:
+ 702               		brne .L47
+ 703 01c8 2534      		dec r13
+ 704 01ca 01F4      		mov r24,r13
+ 705 01cc FD2C      		ldi r25,lo8(0)
+ 706 01ce 8501      		adiw r24,1
+ 707 01d0 C0E0      		add r10,r24
+ 708 01d2 D0E0      		adc r11,r25
+ 709               	.L93:
+ 710               	.LBE182:
+ 711               	.LBE181:
+ 712               	.LBB183:
+ 713               	.LBB184:
+ 715 01d6 C801      	.LM94:
+ 716 01d8 0E94 0000 		sbis 43-32,5
+ 717               		rjmp .L93
+ 718               		rjmp .L159
+ 719 01dc 0F5F      	.L94:
+ 720 01de 1F4F      	.LBE184:
+ 721               	.LBE183:
+ 722               	.LBB185:
+ 723 01e0 FA94      	.LBB186:
+ 724               		sbis 43-32,5
+ 725               		rjmp .L94
+ 726 01e2 01F4      		rjmp .L158
+ 727 01e4 DA94      	.L35:
+ 728 01e6 8D2D      	.LBE186:
+ 729 01e8 90E0      	.LBE185:
+ 730 01ea 0196      	.LBE167:
+ 732 01ee B91E      	.LM95:
+ 733               		cpi r25,lo8(103)
+ 734               		breq .+2
+ 735               		rjmp .L48
+ 736               	.L97:
+ 737               	.LBB187:
+ 738               	.LBB188:
+ 739               	.LBB189:
+ 741 01f2 00C0      	.LM96:
+ 742 01f4 00C0      		sbis 43-32,7
+ 743               		rjmp .L97
+ 745               	.LM97:
+ 746               		in r24,44-32
+ 747               	.L50:
+ 748 01f6 5D9B      	.LBE189:
+ 749 01f8 00C0      	.LBE188:
+ 750 01fa 00C0      	.LBB190:
+ 751               	.LBB191:
+ 753               	.LM98:
+ 754               		sbis 43-32,7
+ 755               		rjmp .L50
+ 757 01fc 9736      	.LM99:
+ 758 01fe 01F0      		in r15,44-32
+ 759 0200 00C0      	.L51:
+ 760               	.LBE191:
+ 761               	.LBE190:
+ 762               	.LBB192:
+ 763               	.LBB193:
+ 765               	.LM100:
+ 766 0202 5F9B      		sbis 43-32,7
+ 767 0204 00C0      		rjmp .L51
+ 769               	.LM101:
+ 770 0206 8CB1      		in r24,44-32
+ 771               	.LBE193:
+ 772               	.LBE192:
+ 774               	.LM102:
+ 775               		cpi r24,lo8(70)
+ 776               		brne .L52
+ 777               	.LBB194:
+ 778 0208 5F9B      	.LBB195:
+ 780               	.LM103:
+ 781               		movw r24,r10
+ 782 020c FCB0      		ldi r26,lo8(0)
+ 783               		ldi r27,hi8(0)
+ 784               		lsl r24
+ 785               		rol r25
+ 786               		rol r26
+ 787               		rol r27
+ 788               	.L55:
+ 789               	.LBB196:
+ 791 0210 00C0      	.LM104:
+ 792               		movw r30,r24
+ 793               	/* #APP */
+ 794 0212 8CB1      	 ;  277 "main.c" 1
+ 795               		lpm r18, Z+
+ 796               		lpm r19, Z
+ 797               		
+ 798               	 ;  0 "" 2
+ 799 0214 8634      	/* #NOAPP */
+ 800 0216 01F4      	.L53:
+ 801               	.LBE196:
+ 802               	.LBB197:
+ 803               	.LBB198:
+ 805 0218 C501      	.LM105:
+ 806 021a A0E0      		sbis 43-32,5
+ 807 021c B0E0      		rjmp .L53
+ 809 0220 991F      	.LM106:
+ 810 0222 AA1F      		out 44-32,r18
+ 811 0224 BB1F      	.L54:
+ 812               	.LBE198:
+ 813               	.LBE197:
+ 814               	.LBB199:
+ 815               	.LBB200:
+ 817               	.LM107:
+ 818               		sbis 43-32,5
+ 819 0228 2591      		rjmp .L54
+ 821               	.LM108:
+ 822               		out 44-32,r19
+ 823               	.LBE200:
+ 824               	.LBE199:
+ 826               	.LM109:
+ 827               		adiw r24,2
+ 828               		adc r26,__zero_reg__
+ 829               		adc r27,__zero_reg__
+ 831 022e 00C0      	.LM110:
+ 832               		ldi r30,lo8(-2)
+ 833               		add r15,r30
+ 835               	.LM111:
+ 836               		brne .L55
+ 838               	.LM112:
+ 839               		lsr r27
+ 840               		ror r26
+ 841               		ror r25
+ 842 0232 5D9B      		ror r24
+ 843 0234 00C0      		movw r10,r24
+ 844               		rjmp .L153
+ 845               	.L52:
+ 846 0236 3CB9      	.LBE195:
+ 847               	.LBE194:
+ 849               	.LM113:
+ 850               		cpi r24,lo8(69)
+ 851 0238 0296      		breq .+2
+ 852 023a A11D      		rjmp .L153
+ 853 023c B11D      		mov r14,r15
+ 854               		movw r16,r10
+ 855               	.L57:
+ 856 023e EEEF      	.LBB201:
+ 858               	.LM114:
+ 859               		movw r24,r16
+ 860 0242 01F4      		call __eerd_byte_m16
+ 861               	.L56:
+ 862               	.LBB202:
+ 863 0244 B695      	.LBB203:
+ 864 0246 A795      	.LBB204:
+ 866 024a 8795      	.LM115:
+ 867 024c 5C01      		sbis 43-32,5
+ 868 024e 00C0      		rjmp .L56
+ 870               	.LM116:
+ 871               		out 44-32,r24
+ 872               	.LBE204:
+ 873               	.LBE203:
+ 875 0252 01F0      	.LM117:
+ 876 0254 00C0      		subi r16,lo8(-(1))
+ 877 0256 EF2C      		sbci r17,hi8(-(1))
+ 879               	.LM118:
+ 880               		dec r14
+ 882               	.LM119:
+ 883 025a C801      		brne .L57
+ 884 025c 0E94 0000 		dec r15
+ 885               		mov r24,r15
+ 886               		ldi r25,lo8(0)
+ 887               		adiw r24,1
+ 888               		add r10,r24
+ 889               		adc r11,r25
+ 890               		rjmp .L153
+ 891 0260 5D9B      	.L48:
+ 892 0262 00C0      	.LBE202:
+ 893               	.LBE201:
+ 894               	.LBE187:
+ 896               	.LM120:
+ 897               		cpi r25,lo8(101)
+ 898               		brne .L58
+ 900 0266 0F5F      	.LM121:
+ 901 0268 1F4F      		ldi r31,lo8(117)
+ 902               		cp r5,r31
+ 903               		brne .L98
+ 904 026a EA94      		ldi r30,lo8(0)
+ 905               		ldi r31,hi8(0)
+ 906               	.L61:
+ 907 026c 01F4      	.LBB205:
+ 908 026e FA94      	.LBB206:
+ 910 0272 90E0      	.LM122:
+ 911 0274 0196      	/* #APP */
+ 912 0276 A80E      	 ;  203 "main.c" 1
+ 913 0278 B91E      		sts 87, r4
+ 914 027a 00C0      		spm
+ 915               		
+ 916               	 ;  0 "" 2
+ 917               	/* #NOAPP */
+ 918               	.L60:
+ 919               	.LBE206:
+ 921 027c 9536      	.LM123:
+ 922 027e 01F4      		in __tmp_reg__,87-32
+ 923               		sbrc __tmp_reg__,0
+ 924               		rjmp .L60
+ 925 0280 F5E7      		subi r30,lo8(-(128))
+ 926 0282 5F16      		sbci r31,hi8(-(128))
+ 927 0284 01F4      	.LBB207:
+ 929 0288 F0E0      	.LM124:
+ 930               		ldi r18,hi8(15360)
+ 931               		cpi r30,lo8(15360)
+ 932               		cpc r31,r18
+ 933               		brne .L61
+ 935               	.LM125:
+ 936               		ldi r22,lo8(17)
+ 937 028a 4092 5700 	/* #APP */
+ 938 028e E895      	 ;  207 "main.c" 1
+ 939               		sts 87, r22
+ 940               		spm
+ 941               		
+ 942               	 ;  0 "" 2
+ 943               	/* #NOAPP */
+ 944               	.L98:
+ 945               	.LBE207:
+ 946 0290 07B6      	.LBE205:
+ 947 0292 00FC      	.LBB208:
+ 948 0294 00C0      	.LBB209:
+ 950 0298 FF4F      	.LM126:
+ 951               		sbis 43-32,5
+ 952               		rjmp .L98
+ 953               		rjmp .L159
+ 954 029a 2CE3      	.L58:
+ 955 029c E030      	.LBE209:
+ 956 029e F207      	.LBE208:
+ 958               	.LM127:
+ 959               		cpi r25,lo8(69)
+ 960 02a2 61E1      		brne .L62
+ 962               	.LM128:
+ 963 02a4 6093 5700 		ldi r24,lo8(12)
+ 964 02a8 E895      	/* #APP */
+ 965               	 ;  576 "main.c" 1
+ 966               		in __tmp_reg__,__SREG__
+ 967               		cli
+ 968               		wdr
+ 969               		out 33,r2
+ 970               		out __SREG__,__tmp_reg__
+ 971               		out 33,r24
+ 972               	 ;  0 "" 2
+ 973               	/* #NOAPP */
+ 974               	.L63:
+ 975 02aa 5D9B      	.LBB210:
+ 976 02ac 00C0      	.LBB211:
+ 978               	.LM129:
+ 979               		sbis 43-32,5
+ 980               		rjmp .L63
+ 981               		rjmp .L159
+ 982               	.L62:
+ 983 02b0 9534      	.LBE211:
+ 984 02b2 01F4      	.LBE210:
+ 986               	.LM130:
+ 987 02b4 8CE0      		cpi r25,lo8(80)
+ 988               		brne .L64
+ 989               	.L99:
+ 990 02b6 0FB6      	.LBB212:
+ 991 02b8 F894      	.LBB213:
+ 993 02bc 21BC      	.LM131:
+ 994 02be 0FBE      		sbis 43-32,5
+ 995 02c0 81BD      		rjmp .L99
+ 996               		rjmp .L159
+ 997               	.L64:
+ 998               	.LBE213:
+ 999               	.LBE212:
+ 1001               	.LM132:
+ 1002               		cpi r25,lo8(76)
+ 1003 02c2 5D9B      		brne .L66
+ 1004 02c4 00C0      	.L100:
+ 1005 02c6 00C0      	.LBB214:
+ 1006               	.LBB215:
+ 1008               	.LM133:
+ 577:main.c        **** ckbits
+ 578:main.c        **** 			} 
+ 579:main.c        **** 			else if (val == 'l') 
+ 580:main.c        **** 			{
+ 581:main.c        **** 			if (device == DEVTYPE) 
+ 582:main.c        **** 				{
+ 583:main.c        **** 				// write_lock_bits(recvchar());
+ 584:main.c        **** 				boot_lock_bits_set(recvchar());	// boot.h takes care of mask
+ 585:main.c        **** 				boot_spm_busy_wait();
+ 586:main.c        **** 				}
+ 587:main.c        **** 			sendchar('\r');
+ 588:main.c        **** 		#endif
+ 589:main.c        **** 		// Enter programming mode
+ 590:main.c        **** 		} 
+ 591:main.c        **** 		else if (val == 'P') 
+ 592:main.c        **** 		{
+ 593:main.c        **** 		sendchar('\r');
+ 594:main.c        **** 
+ 595:main.c        **** 		// Leave programming mode
+ 596:main.c        **** 		} 
+ 1009               	rjmp .L100
+ 1010               		rjmp .L159
+ 1011 02c8 9035      	.L66:
+ 1012 02ca 01F4      	.LBE215:
+ 1013               	.LBE214:
+ 1015               	.LM134:
+ 1016               		cpi r25,lo8(112)
+ 1017               		brne .L68
+ 1018 02cc 5D9B      	.L101:
+ 1019 02ce 00C0      	.LBB216:
+ 1020 02d0 00C0      	.LBB217:
+ 1022               	.LM135:
+ 1023               		sbis 43-32,5
+ 597:main.c        **** ) 
+ 598:main.c        **** 		{
+ 599:main.c        **** 		sendchar('\r');
+ 600:main.c        **** 
+ 601:main.c        **** 		// Leave programming mode
+ 602:main.c        **** 		} 
+ 1024               	tabn	68,0,188,.LM136-.LFBB3
+ 1025               	.LM136:
+ 1026 02d2 9C34      		ldi r30,lo8(83)
+ 1027 02d4 01F4      		rjmp .L156
+ 1028               	.L68:
+ 1029               	.LBE217:
+ 1030               	.LBE216:
+ 1032               	.LM137:
+ 1033 02d6 5D9B      		cpi r25,lo8(116)
+ 1034 02d8 00C0      		brne .L70
+ 1035 02da 00C0      	.L102:
+ 1036               	.LBB218:
+ 1037               	.LBB219:
+ 603:main.c        **** ) 
+ 604:main.c        **** 		{
+ 605:main.c        **** 		sendchar('\r');
+ 606:main.c        **** 
+ 607:main.c        **** 		// Leave programming mode
+ 1039               	3-32,5
+ 1040               		rjmp .L102
+ 1042 02de 01F4      	.LM139:
+ 1043               		ldi r31,lo8(117)
+ 1044               		out 44-32,r31
+ 1045               	.L72:
+ 1046               	.LBE219:
+ 1047               	.LBE218:
+ 1048 02e0 5D9B      	.LBB220:
+ 1049 02e2 00C0      	.LBB221:
+ 1051               	.LM140:
+ 1052 02e4 E3E5      		sbis 43-32,5
+ 1053 02e6 00C0      		rjmp .L72
+ 1054               	.L158:
+ 1056               	.LM141:
+ 608:main.c        **** == 'P') 
+ 609:main.c        **** 		{
+ 610:main.c        **** 		sendchar('\r');
+ 611:main.c        **** 
+ 612:main.c        **** 		// Leave programming mode
+ 613:main.c        **** 		} 
+ 614:main.c        **** 		else if (val == 'L') 
+ 615:main.c        **** 		{
+ 616:main.c        **** 		sendchar('\r');
+ 617:main.c        **** 		// return programmer type
+ 618:main.c        **** 		} 
+ 619:main.c        **** 		else if (val == 'p') 
+ 620:main.c        **** 		{
+ 621:main.c        **** 		sendchar('S');		// always serial programmer
+ 622:main.c        **** 
+ 623:main.c        **** 		#ifdef ENABLEREADFUSELOCK
+ 624:main.c        **** 			#warning "Extension 'ReadFuseLock' enabled"
+ 625:main.c        **** 			// read "low" fuse bits
+ 626:main.c        **** 			} 
+ 627:main.c        **** 			else if (val == 'F') 
+ 628:main.c        **** 			{
+ 629:main.c        **** 			sendchar(read_fuse_lock(GET_LOW_FUSE_BITS));
+ 630:main.c        **** 
+ 631:main.c        **** 			// read lock bits
+ 632:main.c        **** 			} 
+ 633:main.c        **** 			else if (val == 'r') 
+ 634:main.c        **** 			{
+ 635:main.c        **** 			sendchar(read_fuse_lock(GET_LOCK_BITS));
+ 636:main.c        **** 
+ 637:main.c        **** 			// read high fuse bits
+ 638:main.c        **** 			} 
+ 639:main.c        **** 			else if (val == 'N') 
+ 1057               	,0,188,.LM139-.LFBB3
+ 1058               	.LM139:
+ 1059 02e8 9437      		ldi r31,lo8(117)
+ 1060 02ea 01F4      		out 44-32,r31
+ 1061               	.L72:
+ 1062               	.LBE219:
+ 1063               	.LBE218:
+ 1064               	.LBB220:
+ 1065               	.LBB221:
+ 1067 02ee 00C0      	.LM140:
+ 1068               		sbis 43-32,5
+ 1069               		rjmp .L72
+ 1070 02f0 F5E7      	.L158:
+ 1072               	.LM141:
+ 1073               		out 44-32,__zero_reg__
+ 1074               		rjmp .L153
+ 1075               	.L70:
+ 1076               	.LBE221:
+ 1077               	.LBE220:
+ 1079 02f4 5D9B      	.LM142:
+ 1080 02f6 00C0      		mov r24,r25
+ 1081               		subi r24,lo8(-(-120))
+ 1082               		cpi r24,lo8(2)
+ 1083               		brsh .L73
+ 1084 02f8 1CB8      	.L103:
+ 1085 02fa 00C0      	.LBB222:
+ 1086               	.LBB223:
+ 1088               	.LM143:
+ 640:main.c        ****  fuse bits
+ 641:main.c        **** 			} 
+ 642:main.c        **** 			else if (val == 'N') 
+ 643:main.c        **** 			{
+ 644:main.c        **** 			sendchar(read_fuse_lock(GET_HIGH_FUSE_BITS));
+ 645:main.c        **** 			// read extended fuse bits
+ 1089               	p .L153
+ 1090               	.L70:
+ 1091 02fc 892F      	.LBE221:
+ 1092 02fe 8857      	.LBE220:
+ 1094 0302 00F4      	.LM142:
+ 1095               		mov r24,r25
+ 1096               		subi r24,lo8(-(-120))
+ 1097               		cpi r24,lo8(2)
+ 1098               		brsh .L73
+ 1099               	.L103:
+ 1100 0304 5F9B      	.LBB222:
+ 1101 0306 00C0      	.LBB223:
+ 1103               	.LM143:
+ 1104 0308 8CB1      		sbis 43-32,7
+ 1105               		rjmp .L103
+ 1107               	.LM144:
+ 1108               		in r24,44-32
+ 1109               	.L75:
+ 1110               	.LBE223:
+ 1111               	.LBE222:
+ 1112 030a 5D9B      	.LBB224:
+ 1113 030c 00C0      	.LBB225:
+ 1115               	.LM145:
+ 1116               		sbis 43-32,5
+ 1117               		rjmp .L75
+ 646:main.c        **** SE_BITS));
+ 647:main.c        **** 			// read extended fuse bits
+ 648:main.c        **** 			} 
+ 649:main.c        **** 			else if (val == 'Q') 
+ 650:main.c        **** 			{
+ 651:main.c        **** 			sendchar(read_fuse_lock(GET_EXTENDED_FUSE_BITS));
+ 652:main.c        **** 			#endif
+ 1118               	sbis 43-32,7
+ 1119               		rjmp .L103
+ 1121 0312 01F4      	.LM144:
+ 1122               		in r24,44-32
+ 1123               	.L75:
+ 1124               	.LBE223:
+ 1125               	.LBE222:
+ 1126               	.LBB224:
+ 1127 0314 5F9B      	.LBB225:
+ 1129               	.LM145:
+ 1130               		sbis 43-32,5
+ 1131 0318 5CB0      		rjmp .L75
+ 1132               		rjmp .L159
+ 1133               	.L73:
+ 1134               	.LBE225:
+ 1135               	.LBE224:
+ 1137               	.LM146:
+ 1138               		cpi r25,lo8(84)
+ 1139 031a 5D9B      		brne .L76
+ 1140 031c 00C0      	.L104:
+ 1141               	.LBB226:
+ 1142               	.LBB227:
+ 1144 031e CCB8      	.LM147:
+ 1145 0320 00C0      		sbis 43-32,7
+ 1146               		rjmp .L104
+ 1148               	.LM148:
+ 653:main.c        **** k(GET_EXTENDED_FUSE_BITS));
+ 654:main.c        **** 			#endif
+ 655:main.c        **** 
+ 656:main.c        **** 		// Return device type
+ 657:main.c        **** 		} 
+ 658:main.c        **** 		else if (val == 't') 
+ 1149               	3
+ 1150               	.LM146:
+ 1151 0322 9335      		cpi r25,lo8(84)
+ 1152 0324 01F4      		brne .L76
+ 659:main.c        **** type
+ 660:main.c        **** 		} 
+ 1153               	.LBB225:
+ 1155 0326 0E94 0000 	.LM145:
+ 1156 032a 00C0      		sbis 43-32,5
+ 1157               		rjmp .L75
+ 661:main.c        **** ndif
+ 662:main.c        **** 
+ 663:main.c        **** 		// Return device type
+ 664:main.c        **** 		} 
+ 1158               	sbis 43-32,7
+ 1159               		rjmp .L103
+ 1161 032e 01F4      	.LM144:
+ 1162               		in r24,44-32
+ 1163               	.L75:
+ 1164               	.LBE223:
+ 1165               	.LBE222:
+ 1166               	.LBB224:
+ 1167 0330 5D9B      	.LBB225:
+ 1169               	.LM145:
+ 1170               		sbis 43-32,5
+ 1171 0334 20E3      		rjmp .L75
+ 1172 0336 2CB9      		rjmp .L159
+ 1173               	.L73:
+ 1174               	.LBE225:
+ 1175               	.LBE224:
+ 1177               	.LM146:
+ 1178               		cpi r25,lo8(84)
+ 1179               		brne .L76
+ 1180 0338 5D9B      	.L104:
+ 1181 033a 00C0      	.LBB226:
+ 1182               	.LBB227:
+ 1184 033c 68E3      	.LM147:
+ 1185               		sbis 43-32,7
+ 1186 033e 6CB9      		rjmp .L104
+ 1188               	.LM148:
+ 1189               		in r5,44-32
+ 1190               	.L78:
+ 665:main.c        **** ndif
+ 666:main.c        **** 
+ 667:main.c        **** 		// Return device type
+ 668:main.c        **** 		} 
+ 669:main.c        **** 		else if (val == 't') 
+ 670:main.c        **** 		{
+ 671:main.c        **** 		sendchar(DEVTYPE);
+ 672:main.c        **** 		sendchar(0);
+ 1191               	8(84)
+ 1192               		brne .L76
+ 1193 0342 9337      	.L104:
+ 1194 0344 01F4      	.LBB226:
+ 1195               	.LBB227:
+ 1197               	.LM147:
+ 1198               		sbis 43-32,7
+ 1199               		rjmp .L104
+ 1201 0348 00C0      	.LM148:
+ 1202               		in r5,44-32
+ 1203               	.L78:
+ 1204 034a 4CB8      	.LBE227:
+ 1205               	.LBE226:
+ 1206               	.LBB228:
+ 1207               	.LBB229:
+ 1209               	.LM149:
+ 1210               		sbis 43-32,5
+ 1211               		rjmp .L78
+ 1212 034c 5D9B      	.L159:
+ 1214               	.LM150:
+ 1215               		out 44-32,r12
+ 1216 0350 84E9      		rjmp .L153
+ 1217 0352 8CB9      	.L76:
+ 1218               	.LBE229:
+ 1219               	.LBE228:
+ 1221               	.LM151:
+ 1222               		cpi r25,lo8(83)
+ 1223               		brne .L79
+ 1225 0354 5D9B      	.LM152:
+ 1226 0356 00C0      		call send_boot
+ 1227               		rjmp .L153
+ 1228               	.L79:
+ 1230               	.LM153:
+ 1231 035a ECB9      		cpi r25,lo8(86)
+ 1232 035c 00C0      		brne .L80
+ 1233               	.L105:
+ 1234               	.LBB230:
+ 1235               	.LBB231:
+ 673:main.c        **** endchar(DEVTYPE);
+ 674:main.c        **** 		sendchar(0);
+ 675:main.c        **** 		// clear and set LED ignored
+ 676:main.c        **** 		} 
+ 677:main.c        **** 		else if ((val == 'x') || (val == 'y')) 
+ 678:main.c        **** 		{
+ 679:main.c        **** 		recvchar();
+ 680:main.c        **** 		sendchar('\r');
+ 1236               	LM152:
+ 1237               		call send_boot
+ 1238 035e 9B31      		rjmp .L153
+ 1239 0360 01F4      	.L79:
+ 1241               	.LM153:
+ 1242               		cpi r25,lo8(86)
+ 1243               		brne .L80
+ 1244               	.L105:
+ 1245               	.LBB230:
+ 1246 0364 5D9B      	.LBB231:
+ 1248               	.LM154:
+ 1249               		sbis 43-32,5
+ 1250 0368 FFE3      		rjmp .L105
+ 1252 036c 00C0      	.LM155:
+ 1253               		ldi r18,lo8(48)
+ 1254               		out 44-32,r18
+ 1255               	.L82:
+ 1256               	.LBE231:
+ 1257               	.LBE230:
+ 1258               	.LBB232:
+ 1259               	.LBB233:
+ 1261               	.LM156:
+ 1262               		sbis 43-32,5
+ 1263               		rjmp .L82
+ 1265               	.LM157:
+ 1266               		ldi r22,lo8(56)
+ 1267               	.L154:
+ 1268               		out 44-32,r22
+ 1269               		rjmp .L153
+ 1270               	.L80:
+ 1271               	.LBE233:
+ 1272               	.LBE232:
+ 1274               	.LM158:
+ 1275               		cpi r25,lo8(115)
+ 1276               		brne .L83
+ 1277               	.L106:
+ 1278               	.LBB234:
+ 1279               	.LBB151:
+ 1281               	.LM159:
+ 1282               		sbis 43-32,5
+ 1283               		rjmp .L106
+ 1285               	.LM160:
+ 1286               		out 44-32,r4
+ 1287               	.L85:
+ 1288               	.LBE151:
+ 1289               	.LBE234:
+ 1290               	.LBB235:
+ 1291               	.LBB236:
+ 1293               	.LM161:
+ 1294               		sbis 43-32,5
+ 1295               		rjmp .L85
+ 1297               	.LM162:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:2      *ABS*:0000003f __SREG__
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:3      *ABS*:0000003e __SP_H__
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:4      *ABS*:0000003d __SP_L__
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:5      *ABS*:00000034 __CCP__
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:96     .text:00000000 __vector_default
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:110    .text:00000002 send_boot
+C:\Users\al-si\AppData\Local\Temp/ccSGLklu.s:216    .text:0000003c main
+                            *COM*:00000080 gBuffer
+
+UNDEFINED SYMBOLS
+__eewr_byte_m16
+__eerd_byte_m16
+__do_clear_bss

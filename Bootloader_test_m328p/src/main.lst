@@ -1,0 +1,1843 @@
+   1               		.file	"main.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+  94               	.global	__vector_default
+  96               	__vector_default:
+   1:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include <stdint.h>
+   2:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include <avr/io.h>
+   3:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include <avr/wdt.h>
+   4:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include <avr/boot.h>
+   5:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include <avr/pgmspace.h>
+   6:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include <avr/eeprom.h>
+   7:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include <avr/interrupt.h>
+   8:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include <util/delay.h>
+   9:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  10:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #include "chipdef.h"
+  11:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  12:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  13:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* Частота контроллера (кварца) */
+  14:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #ifndef F_CPU
+  15:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define F_CPU 7372800
+  16:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define F_CPU (7372800/2)
+  17:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define F_CPU 16000000
+  18:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #endif
+  19:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  20:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* UART Скорость UART оптимально 19200 */
+  21:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define BAUDRATE 9600
+  22:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BAUDRATE 19200
+  23:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define BAUDRATE 115200
+  24:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  25:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* Режим двойной скорости UART (бит U2C)*/
+  26:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define UART_DOUBLESPEED
+  27:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  28:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* Используется второй UART на mega128 / can128 / mega162 / mega324p / mega644p */
+  29:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define UART_USE_SECOND
+  30:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  31:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* Тип устройства:
+  32:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****    Для AVRProg выбирать BOOT 
+  33:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****    Это корректное значение для bootloader.
+  34:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****    avrdude может определить только part-code для ISP */
+  35:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define DEVTYPE     DEVTYPE_BOOT
+  36:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define DEVTYPE     DEVTYPE_ISP
+  37:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  38:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /*
+  39:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Выбор порта для кнопки входа в загрузчик
+  40:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Чтобы войти в загрузчик надо чтобы при запуске эта кнопка замыкала пин на землю
+  41:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  */
+  42:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BLPORT		PORTD
+  43:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BLDDR		DDRD
+  44:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BLPIN		PIND
+  45:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BLPNUM		PIND7
+  46:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  47:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /*
+  48:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Выбор порта для индикатора работы загрузчика
+  49:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Светодиод горит - мы в загрузчике
+  50:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  */
+  51:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  52:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define ENABLE_BOOT_LED
+  53:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BIPORT		PORTD
+  54:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BIDDR		DDRD
+  55:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BIPIN		PIND
+  56:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define BIPNUM		PIND5
+  57:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  58:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  59:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /*
+  60:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Выключить Собачий таймер на время загрузчика
+  61:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  */
+  62:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define DISABLE_WDT_AT_STARTUP
+  63:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  64:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /*
+  65:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Watchdog-reset is issued at exit 
+  66:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * define the timeout-value here (see avr-libc manual)
+  67:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  */
+  68:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define EXIT_WDT_TIME   WDTO_250MS
+  69:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  70:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /*
+  71:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Выбор режима загрузчика
+  72:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * SIMPLE-Mode - Загрузчик стартует когда нажата его кнопка
+  73:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   переход к основной программе осуществляется после сброса 
+  74:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   (кнопка должна быть отжата) либо по команде от программатора
+  75:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   При этом режиме вывод на кнопку конфигурируется как вход-с подтягом,
+  76:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   но при выходе из загрузчика все выставляется по умолчанию
+  77:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * POWERSAVE-Mode - Startup is separated in two loops
+  78:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   which makes power-saving a little easier if no firmware
+  79:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   is on the chip. Needs more memory
+  80:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * BOOTICE-Mode - для зашивки  JTAGICE файла upgrade.ebn в Мегу16.
+  81:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   что превращает ее в JTAG отладчик. Разумеется нужно добавить весь необходимый
+  82:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   обвяз на кристалл для этого. И частота должна быть везде прописана как 7372800
+  83:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   в F_CPU Для совместимости с родной прошивкой JTAG ICE
+  84:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * WAIT-mode Bootloader ожидает команды на вход, если ее не было в течении промежутка времени
+  85:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  *   (который настраивается) то проихсодит переход к основной программе.
+  86:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  */
+  87:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define START_SIMPLE
+  88:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define START_WAIT
+  89:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define START_POWERSAVE
+  90:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define START_BOOTICE
+  91:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  92:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* Команда для входа в загрузчик в START_WAIT */
+  93:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define START_WAIT_UARTCHAR 'S'
+  94:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  95:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* Выдержка для START_WAIT mode ( t = WAIT_TIME * 10ms ) */
+  96:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define WAIT_VALUE 300 /* сейчас: 300*10ms = 3000ms = 3sec */
+  97:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+  98:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /*
+  99:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * enable/disable readout of fuse and lock-bits
+ 100:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * (AVRPROG has to detect the AVR correctly by device-code
+ 101:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * to show the correct information).
+ 102:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  */
+ 103:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define ENABLEREADFUSELOCK
+ 104:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 105:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* enable/disable write of lock-bits
+ 106:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * WARNING: lock-bits can not be reseted by bootloader (as far as I know)
+ 107:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Only protection no unprotection, "chip erase" from bootloader only
+ 108:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * clears the flash but does no real "chip erase" (this is not possible
+ 109:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * with a bootloader as far as I know)
+ 110:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * Keep this undefined!
+ 111:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  */
+ 112:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define WRITELOCKBITS
+ 113:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 114:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /*
+ 115:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * define the following if the bootloader should not output
+ 116:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  * itself at flash read (will fake an empty boot-section)
+ 117:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  */
+ 118:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** //#define READ_PROTECT_BOOTLOADER 
+ 119:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 120:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define VERSION_HIGH '0'
+ 121:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #define VERSION_LOW  '8'
+ 122:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 123:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define GET_LOCK_BITS           0x0001
+ 124:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define GET_LOW_FUSE_BITS       0x0000
+ 125:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define GET_HIGH_FUSE_BITS      0x0003
+ 126:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #define GET_EXTENDED_FUSE_BITS  0x0002
+ 127:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 128:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** /* Расчет делителя частоты для USART*/
+ 129:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #ifdef UART_DOUBLESPEED
+ 130:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 131:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#define UART_CALC_BAUDRATE(baudRate) ((uint32_t)((F_CPU) + ((uint32_t)baudRate * 4UL)) / ((uint32_
+ 132:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 133:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #else
+ 134:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 135:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#define UART_CALC_BAUDRATE(baudRate) ((uint32_t)((F_CPU) + ((uint32_t)baudRate * 8UL)) / ((uint32_
+ 136:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 137:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #endif
+ 138:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 139:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 140:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** uint8_t gBuffer[SPM_PAGESIZE];
+ 141:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 142:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #if defined(BOOTLOADERHASNOVECTORS)
+ 143:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	// #warning "This Bootloader does not link interrupt vectors - see makefile"
+ 144:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	/* make the linker happy - it wants to see __vector_default */
+ 145:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	// void __vector_default(void) { ; }
+ 146:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	void __vector_default(void) { ; }
+  97               	abn	68,0,146,.LM0-.LFBB1
+  98               	.LM0:
+  99               	.LFBB1:
+ 100               	/* prologue: function */
+ 101               	/* frame size = 0 */
+ 102               	/* epilogue start */
+ 104               	.LM1:
+ 105 0000 0895      		ret
+ 107               	.Lscope1:
+ 110               	send_boot:
+ 147:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** f
+ 148:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 149:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static void sendchar(uint8_t data)
+ 150:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 151:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	while (!(UART_STATUS & (1<<UART_TXREADY)));
+ 152:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	UART_DATA = data;
+ 153:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 154:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 155:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static uint8_t recvchar(void)
+ 156:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 157:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	while (!(UART_STATUS & (1<<UART_RXREADY)));
+ 158:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	return UART_DATA;
+ 159:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 160:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 161:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static inline void eraseFlash(void)
+ 162:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 163:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	// erase only main section (bootloader protection)
+ 164:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint32_t addr = 0;
+ 165:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	while (APP_END > addr) 
+ 166:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 167:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		boot_page_erase(addr);		// Perform page erase
+ 168:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		boot_spm_busy_wait();		// Wait until the memory is erased.
+ 169:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		addr += SPM_PAGESIZE;
+ 170:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		}
+ 171:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	boot_rww_enable();
+ 172:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 173:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 174:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static inline void recvBuffer(pagebuf_t size)
+ 175:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 176:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	pagebuf_t cnt;
+ 177:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint8_t *tmp = gBuffer;
+ 178:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 179:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	for (cnt = 0; cnt < sizeof(gBuffer); cnt++) 
+ 180:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 181:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		*tmp++ = (cnt < size) ? recvchar() : 0xFF;
+ 182:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		}
+ 183:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 184:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 185:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static inline uint16_t writeFlashPage(uint16_t waddr, pagebuf_t size)
+ 186:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 187:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint32_t pagestart = (uint32_t)waddr<<1;
+ 188:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint32_t baddr = pagestart;
+ 189:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint16_t data;
+ 190:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint8_t *tmp = gBuffer;
+ 191:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 192:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	do 
+ 193:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 194:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		data = *tmp++;
+ 195:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		data |= *tmp++ << 8;
+ 196:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		boot_page_fill(baddr, data);	// call asm routine.
+ 197:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 198:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		baddr += 2;			// Select next word in memory
+ 199:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		size -= 2;			// Reduce number of bytes to write by two
+ 200:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 201:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	while (size);				// Loop until all bytes written
+ 202:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 203:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	boot_page_write(pagestart);
+ 204:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	boot_spm_busy_wait();
+ 205:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	boot_rww_enable();		// Re-enable the RWW section
+ 206:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 207:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	return baddr>>1;
+ 208:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 209:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 210:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static inline uint16_t writeEEpromPage(uint16_t address, pagebuf_t size)
+ 211:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 212:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint8_t *tmp = gBuffer;
+ 213:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 214:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	do 
+ 215:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 216:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		eeprom_write_byte( (uint8_t*)address, *tmp++ );
+ 217:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		address++;			// Select next byte
+ 218:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		size--;				// Decreas number of bytes to write
+ 219:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		}
+ 220:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	while (size);				// Loop until all bytes written
+ 221:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 222:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	// eeprom_busy_wait();
+ 223:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 224:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	return address;
+ 225:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 226:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 227:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static inline uint16_t readFlashPage(uint16_t waddr, pagebuf_t size)
+ 228:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 229:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint32_t baddr = (uint32_t)waddr<<1;
+ 230:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint16_t data;
+ 231:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 232:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	do 
+ 233:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	{
+ 234:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 235:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #ifndef READ_PROTECT_BOOTLOADER
+ 236:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** // #warning "Bootloader not read-protected"
+ 237:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 238:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#if defined(RAMPZ)
+ 239:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		data = pgm_read_word_far(baddr);
+ 240:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#else
+ 241:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		data = pgm_read_word_near(baddr);
+ 242:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#endif
+ 243:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 244:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #else
+ 245:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// don't read bootloader
+ 246:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		if ( baddr < APP_END ) 
+ 247:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 248:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#if defined(RAMPZ)
+ 249:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			data = pgm_read_word_far(baddr);
+ 250:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#else
+ 251:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			data = pgm_read_word_near(baddr);
+ 252:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#endif
+ 253:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		}
+ 254:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else 
+ 255:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 256:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		data = 0xFFFF; // fake empty
+ 257:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		}
+ 258:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #endif
+ 259:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar(data);			// send LSB
+ 260:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar((data >> 8));		// send MSB
+ 261:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		baddr += 2;			// Select next word in memory
+ 262:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		size -= 2;			// Subtract two bytes from number of bytes to read
+ 263:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	} 
+ 264:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	while (size);				// Repeat until block has been read
+ 265:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	return baddr>>1;
+ 266:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 267:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 268:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static inline uint16_t readEEpromPage(uint16_t address, pagebuf_t size)
+ 269:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 270:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	do 
+ 271:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	{
+ 272:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	sendchar( eeprom_read_byte( (uint8_t*)address ) );
+ 273:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	address++;
+ 274:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	size--;				// Decrease number of bytes to read
+ 275:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	} 
+ 276:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	while (size);				// Repeat until block has been read
+ 277:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 278:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	return address;
+ 279:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 280:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 281:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #if defined(ENABLEREADFUSELOCK)
+ 282:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static uint8_t read_fuse_lock(uint16_t addr)
+ 283:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 284:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint8_t mode = (1<<BLBSET) | (1<<SPMEN);
+ 285:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint8_t retval;
+ 286:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 287:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	asm volatile
+ 288:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	(
+ 289:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		"movw r30, %3\n\t"		/* Z to addr */ \
+ 290:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		"sts %0, %2\n\t"		/* set mode in SPM_REG */ \
+ 291:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		"lpm\n\t"			/* load fuse/lock value into r0 */ \
+ 292:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		"mov %1,r0\n\t"			/* save return value */ \
+ 293:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		: "=m" (SPM_REG),
+ 294:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		  "=r" (retval)
+ 295:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		: "r" (mode),
+ 296:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		  "r" (addr)
+ 297:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		: "r30", "r31", "r0"
+ 298:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	);
+ 299:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	return retval;
+ 300:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** }
+ 301:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #endif
+ 302:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 303:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** static void send_boot(void)
+ 304:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 111               	04,.LM2-.LFBB2
+ 112               	.LM2:
+ 113               	.LFBB2:
+ 114               	/* prologue: function */
+ 115               	/* frame size = 0 */
+ 116               	.L4:
+ 117               	.LBB124:
+ 118               	.LBB125:
+ 120               	.LM3:
+ 121 0002 8091 C000 		lds r24,192
+ 122 0006 85FF      		sbrs r24,5
+ 123 0008 00C0      		rjmp .L4
+ 125               	.LM4:
+ 126 000a 81E4      		ldi r24,lo8(65)
+ 127 000c 8093 C600 		sts 198,r24
+ 128               	.L5:
+ 129               	.LBE125:
+ 130               	.LBE124:
+ 131               	.LBB126:
+ 132               	.LBB127:
+ 134               	.LM5:
+ 135 0010 8091 C000 		lds r24,192
+ 136 0014 85FF      		sbrs r24,5
+ 137 0016 00C0      		rjmp .L5
+ 139               	.LM6:
+ 140 0018 86E5      		ldi r24,lo8(86)
+ 141 001a 8093 C600 		sts 198,r24
+ 142               	.L6:
+ 143               	.LBE127:
+ 144               	.LBE126:
+ 145               	.LBB128:
+ 146               	.LBB129:
+ 148               	.LM7:
+ 149 001e 8091 C000 		lds r24,192
+ 150 0022 85FF      		sbrs r24,5
+ 151 0024 00C0      		rjmp .L6
+ 153               	.LM8:
+ 154 0026 82E5      		ldi r24,lo8(82)
+ 155 0028 8093 C600 		sts 198,r24
+ 156               	.L7:
+ 157               	.LBE129:
+ 158               	.LBE128:
+ 159               	.LBB130:
+ 160               	.LBB131:
+ 162               	.LM9:
+ 163 002c 8091 C000 		lds r24,192
+ 164 0030 85FF      		sbrs r24,5
+ 165 0032 00C0      		rjmp .L7
+ 167               	.LM10:
+ 168 0034 82E4      		ldi r24,lo8(66)
+ 169 0036 8093 C600 		sts 198,r24
+ 170               	.L8:
+ 171               	.LBE131:
+ 172               	.LBE130:
+ 173               	.LBB132:
+ 174               	.LBB133:
+ 176               	.LM11:
+ 177 003a 8091 C000 		lds r24,192
+ 178 003e 85FF      		sbrs r24,5
+ 179 0040 00C0      		rjmp .L8
+ 181               	.LM12:
+ 182 0042 8FE4      		ldi r24,lo8(79)
+ 183 0044 8093 C600 		sts 198,r24
+ 184               	.L9:
+ 185               	.LBE133:
+ 186               	.LBE132:
+ 187               	.LBB134:
+ 188               	.LBB135:
+ 190               	.LM13:
+ 191 0048 8091 C000 		lds r24,192
+ 192 004c 85FF      		sbrs r24,5
+ 193 004e 00C0      		rjmp .L9
+ 195               	.LM14:
+ 196 0050 8FE4      		ldi r24,lo8(79)
+ 197 0052 8093 C600 		sts 198,r24
+ 198               	.L10:
+ 199               	.LBE135:
+ 200               	.LBE134:
+ 201               	.LBB136:
+ 202               	.LBB137:
+ 204               	.LM15:
+ 205 0056 8091 C000 		lds r24,192
+ 206 005a 85FF      		sbrs r24,5
+ 207 005c 00C0      		rjmp .L10
+ 209               	.LM16:
+ 210 005e 84E5      		ldi r24,lo8(84)
+ 211 0060 8093 C600 		sts 198,r24
+ 212               	/* epilogue start */
+ 213               	.LBE137:
+ 214               	.LBE136:
+ 305:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** void) = 0x0000;
+ 306:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 307:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** int main(void)
+ 308:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** {
+ 309:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint16_t address = 0;
+ 310:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint8_t device = 0, val;
+ 311:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 312:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 215               	36,0,0,main
+ 216               	.global	main
+ 218               	main:
+ 220               	.LM18:
+ 221               	.LFBB3:
+ 222               		push r2
+ 223               		push r3
+ 313:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** def ENABLE_BOOT_LED	// LED ON
+ 314:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	BIPORT |= (1<<BIPNUM);	
+ 315:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	BIDDR  |= (1<<BIPNUM);
+ 316:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #endif
+ 317:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 224               		push r5
+ 225               		push r6
+ 226               		push r7
+ 227 0066 2F92      		push r8
+ 228 0068 3F92      		push r9
+ 229 006a 4F92      		push r10
+ 230 006c 5F92      		push r11
+ 231 006e 6F92      		push r12
+ 232 0070 7F92      		push r13
+ 233 0072 8F92      		push r14
+ 234 0074 9F92      		push r15
+ 235 0076 AF92      		push r16
+ 236 0078 BF92      		push r17
+ 237 007a CF92      		push r28
+ 238 007c DF92      		push r29
+ 239 007e EF92      	/* prologue: function */
+ 240 0080 FF92      	/* frame size = 0 */
+ 242 0084 1F93      	.LM19:
+ 243 0086 CF93      	/* #APP */
+ 244 0088 DF93      	 ;  334 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 245               		cli
+ 246               	 ;  0 "" 2
+ 318:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 319:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #ifdef DISABLE_WDT_AT_STARTUP
+ 320:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#ifdef WDT_OFF_SPECIAL
+ 321:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#warning "using target specific watchdog_off"
+ 322:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		bootloader_wdt_off();
+ 323:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#else
+ 324:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		cli();
+ 325:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		wdt_reset();
+ 326:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		wdt_disable();
+ 327:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#endif
+ 328:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #endif
+ 329:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	
+ 330:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #ifdef START_POWERSAVE
+ 331:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint8_t OK = 1;
+ 332:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #endif
+ 333:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 334:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	// BLDDR  &= ~(1<<BLPNUM);		// set as Input
+ 247               	.LFBB3
+ 248               	.LM20:
+ 249               	 ;  335 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 250               		wdr
+ 251 008a F894      	 ;  0 "" 2
+ 335:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** <<BLPNUM);		// Enable pullup
+ 253               	
+ 254               	/* #NOAPP */
+ 255               		ldi r24,lo8(24)
+ 256 008c A895      	/* #APP */
+ 257               	 ;  336 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 336:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	// Set baud rate
+ 258               	__tmp_reg__, __SREG__
+ 259               		cli
+ 260               		sts 96, r24
+ 261 008e 88E1      		sts 96, __zero_reg__
+ 262               		out __SREG__,__tmp_reg__
+ 263               		
+ 264 0090 0FB6      	 ;  0 "" 2
+ 266 0094 8093 6000 	.LM22:
+ 267 0098 1092 6000 	/* #NOAPP */
+ 268 009c 0FBE      		sts 197,__zero_reg__
+ 270               	.LM23:
+ 337:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** UART_BAUD_HIGH = (UART_CALC_BAUDRATE(BAUDRATE)>>8) & 0xFF;
+ 338:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	UART_BAUD_LOW = (UART_CALC_BAUDRATE(BAUDRATE) & 0xFF);
+ 339:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 340:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #ifdef UART_DOUBLESPEED
+ 341:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	UART_STATUS = ( 1<<UART_DOUBLE );
+ 342:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #endif
+ 343:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 344:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	UART_CTRL = UART_CTRL_DATA;
+ 345:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	UART_CTRL2 = UART_CTRL2_DATA;
+ 346:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	
+ 347:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #if defined(START_POWERSAVE)
+ 348:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	/*
+ 271               	8)
+ 272               		sts 196,r25
+ 274 009e 1092 C500 	.LM24:
+ 349:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  adoption of the Butterfly Bootloader startup-sequence.
+ 275               	 193,r24
+ 277 00a2 98E0      	.LM25:
+ 278 00a4 9093 C400 		ldi r24,lo8(70)
+ 350:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	It may look a little strange but separating the login-loop from
+ 351:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		the main parser-loop gives a lot a possibilities (timeout, sleep-modes
+ 352:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	    etc.).
+ 353:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	*/
+ 354:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	for(;OK;) 
+ 355:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	{
+ 279               	 194,r24
+ 280               		ldi r16,lo8(0)
+ 281 00a8 8093 C100 		ldi r17,hi8(0)
+ 356:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** ((BLPIN & (1<<BLPNUM))) 
+ 282               	tabn	68,0,442,.LM26-.LFBB3
+ 283               	.LM26:
+ 284 00ac 86E4      		clr r14
+ 285 00ae 8093 C200 		clr r15
+ 286 00b2 00E0      	.LBB138:
+ 287 00b4 10E0      	.LBB139:
+ 357:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 358:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// jump to main app if pin is not grounded
+ 359:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// BLPORT &= ~(1<<BLPNUM);	// set to default
+ 360:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 361:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#ifdef UART_DOUBLESPEED
+ 362:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			UART_STATUS &= ~( 1<<UART_DOUBLE );
+ 363:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#endif
+ 364:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 365:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 366:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#ifdef ENABLE_BOOT_LED	// LED OFF
+ 367:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		BIPORT &= ~(1<<BIPNUM);	
+ 368:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		BIDDR  &= ~(1<<BIPNUM);
+ 369:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#endif
+ 370:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 371:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		jump_to_app();		// Jump to application sector
+ 372:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 373:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 374:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else 
+ 375:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 376:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		val = recvchar();
+ 377:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		/* ESC */
+ 378:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			if (val == 0x1B) 
+ 379:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 380:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				// AVRPROG connection
+ 381:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				// Wait for signon
+ 382:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				while (val != 'S')
+ 383:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				val = recvchar();
+ 384:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				
+ 385:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				send_boot();			// Report signon
+ 386:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				OK = 0;
+ 387:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 388:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else 
+ 389:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 390:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar('?');
+ 391:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			}
+ 392:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	    }
+ 393:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Power-Save code here
+ 394:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	}
+ 395:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 396:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #elif defined(START_SIMPLE)
+ 397:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 398:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	if ((BLPIN & (1<<BLPNUM))) {
+ 399:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// jump to main app if pin is not grounded
+ 400:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// BLPORT &= ~(1<<BLPNUM);		// set to default	
+ 401:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			
+ 402:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#ifdef UART_DOUBLESPEED
+ 403:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		UART_STATUS &= ~( 1<<UART_DOUBLE );
+ 404:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	#endif
+ 405:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 406:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#ifdef ENABLE_BOOT_LED	// LED OFF
+ 407:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		BIPORT &= ~(1<<BIPNUM);	
+ 408:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		BIDDR  &= ~(1<<BIPNUM);
+ 409:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#endif
+ 410:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 411:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		jump_to_app();			// Jump to application sector
+ 412:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	}
+ 413:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 414:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #elif defined(START_WAIT)
+ 415:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 416:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	uint16_t cnt = 0;
+ 417:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 418:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	while (1) {
+ 419:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		if (UART_STATUS & (1<<UART_RXREADY))
+ 420:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			if (UART_DATA == START_WAIT_UARTCHAR)
+ 421:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				break;
+ 422:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 423:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		if (cnt++ >= WAIT_VALUE) {
+ 424:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// BLPORT &= ~(1<<BLPNUM);		// set to default
+ 425:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 426:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 427:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			#ifdef ENABLE_BOOT_LED	// LED OFF
+ 428:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			BIPORT &= ~(1<<BIPNUM);	
+ 429:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			BIDDR  &= ~(1<<BIPNUM);
+ 430:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			#endif
+ 431:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			jump_to_app();			// Jump to application sector
+ 432:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		}
+ 433:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 434:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		_delay_ms(10);
+ 435:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	}
+ 436:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	send_boot();
+ 437:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 438:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #elif defined(START_BOOTICE)
+ 439:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #warning "BOOTICE mode - no startup-condition"
+ 440:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 441:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #else
+ 442:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** #error "Select START_ condition for bootloader in main.c"
+ 288               	0:
+ 289               	.LBB141:
+ 291 00b8 FF24      	.Ltext1:
+ 293               	.LM27:
+ 294               		ldi r28,lo8(-25536)
+ 295               		ldi r29,hi8(-25536)
+ 296               	.L23:
+ 297               	.LBE141:
+   1:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    Copyright (c) 2007 Joerg Wunsch
+   3:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    All rights reserved.
+   4:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+   5:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    Redistribution and use in source and binary forms, with or without
+   6:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    modification, are permitted provided that the following conditions are met:
+   7:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+   8:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Redistributions of source code must retain the above copyright
+   9:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer.
+  10:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  11:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Redistributions in binary form must reproduce the above copyright
+  12:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer in
+  13:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      the documentation and/or other materials provided with the
+  14:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      distribution.
+  15:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  16:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Neither the name of the copyright holders nor the names of
+  17:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      contributors may be used to endorse or promote products derived
+  18:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      from this software without specific prior written permission.
+  19:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  20:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  31:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  32:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /* $Id: delay_basic.h,v 1.1 2007/05/13 21:23:20 joerg_wunsch Exp $ */
+  33:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  34:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #ifndef _UTIL_DELAY_BASIC_H_
+  35:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #define _UTIL_DELAY_BASIC_H_ 1
+  36:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  37:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #include <inttypes.h>
+  38:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  39:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \file */
+  40:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \defgroup util_delay_basic <util/delay_basic.h>: Basic busy-wait delay loops
+  41:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     \code
+  42:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     #include <util/delay_basic.h>
+  43:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     \endcode
+  44:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  45:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     The functions in this header file implement simple delay loops
+  46:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     that perform a busy-waiting.  They are typically used to
+  47:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     facilitate short delays in the program execution.  They are
+  48:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     implemented as count-down loops with a well-known CPU cycle
+  49:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     count per loop iteration.  As such, no other processing can
+  50:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     occur simultaneously.  It should be kept in mind that the
+  51:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     functions described here do not disable interrupts.
+  52:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  53:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     In general, for long delays, the use of hardware timers is
+  54:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     much preferrable, as they free the CPU, and allow for
+  55:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     concurrent processing of other events while the timer is
+  56:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     running.  However, in particular for very short delays, the
+  57:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     overhead of setting up a hardware timer is too much compared
+  58:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     to the overall delay time.
+  59:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  60:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Two inline functions are provided for the actual delay algorithms.
+  61:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  62:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** */
+  63:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  64:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #if !defined(__DOXYGEN__)
+  65:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** static inline void _delay_loop_1(uint8_t __count) __attribute__((always_inline));
+  66:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** static inline void _delay_loop_2(uint16_t __count) __attribute__((always_inline));
+  67:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #endif
+  68:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  69:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  70:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  71:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Delay loop using an 8-bit counter \c __count, so up to 256
+  72:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     iterations are possible.  (The value 256 would have to be passed
+  73:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     as 0.)  The loop executes three CPU cycles per iteration, not
+  74:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     including the overhead the compiler needs to setup the counter
+  75:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     register.
+  76:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  77:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to 768 microseconds
+  78:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     can be achieved.
+  79:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** */
+  80:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** void
+  81:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** _delay_loop_1(uint8_t __count)
+  82:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** {
+  83:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	__asm__ volatile (
+  84:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		"1: dec %0" "\n\t"
+  85:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		"brne 1b"
+  86:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		: "=r" (__count)
+  87:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		: "0" (__count)
+  88:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	);
+  89:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** }
+  90:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  91:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  92:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  93:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Delay loop using a 16-bit counter \c __count, so up to 65536
+  94:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     iterations are possible.  (The value 65536 would have to be
+  95:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     passed as 0.)  The loop executes four CPU cycles per iteration,
+  96:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     not including the overhead the compiler requires to setup the
+  97:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     counter register pair.
+  98:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  99:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to about 262.1
+ 100:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     milliseconds can be achieved.
+ 101:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****  */
+ 102:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** void
+ 103:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** _delay_loop_2(uint16_t __count)
+ 104:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** {
+ 105:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	__asm__ volatile (
+ 298               	LBE139:
+ 299               	.LBE138:
+ 301 00bc DCE9      	.Ltext2:
+ 303               	.LM28:
+ 304               		lds r24,192
+ 305               		sbrs r24,7
+ 306               		rjmp .L20
+ 308               	.LM29:
+ 309               		lds r24,198
+ 310               		cpi r24,lo8(83)
+ 311 00be 8091 C000 		breq .L21
+ 312 00c2 87FF      	.L20:
+ 314               	.LM30:
+ 315               		ldi r22,hi8(300)
+ 316 00c6 8091 C600 		cpi r16,lo8(300)
+ 317 00ca 8335      		cpc r17,r22
+ 318 00cc 01F0      		brlo .L22
+ 320               	.LM31:
+ 321               		movw r30,r14
+ 322 00ce 61E0      		icall
+ 323 00d0 0C32      	.L22:
+ 325 00d4 00F0      	.LM32:
+ 326               		subi r16,lo8(-(1))
+ 327               		sbci r17,hi8(-(1))
+ 328 00d6 F701      	.LBB145:
+ 329 00d8 0995      	.LBB144:
+ 330               	.LBB143:
+ 331               	.LBB142:
+ 333 00da 0F5F      	.Ltext3:
+ 335               	.LM33:
+ 336               		movw r24,r28
+ 337               	/* #APP */
+ 338               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 339               		1: sbiw r24,1
+ 340               		brne 1b
+ 341               	 ;  0 "" 2
+ 342               	/* #NOAPP */
+ 343 00de CE01      		rjmp .L23
+ 344               	.L21:
+ 345               	.LBE142:
+ 346 00e0 0197      	.LBE143:
+ 347 00e2 01F4      	.LBE144:
+ 348               	.LBE145:
+ 350 00e4 00C0      	.Ltext4:
+ 352               	.LM34:
+ 353               		call send_boot
+ 354               		clr r5
+ 355               		clr r10
+ 356               		clr r11
+ 357               	.LBB146:
+ 443:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** ent?
+ 444:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		if (val == 'a') 
+ 445:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 446:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar('Y');			// Autoincrement is quicker
+ 447:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 358               	3)
+ 359               		mov r12,r26
+ 360 00e6 0E94 0000 	.LBE147:
+ 361 00ea 5524      	.LBE146:
+ 362 00ec AA24      	.LBB149:
+ 363 00ee BB24      	.LBB150:
+ 364               	.LBB151:
+ 366               	.LM36:
+ 367               		ldi r31,lo8(17)
+ 368 00f0 ADE0      		mov r4,r31
+ 369 00f2 CA2E      	.LBE151:
+ 370               	.LBE150:
+ 371               	.LBE149:
+ 373               	.LM37:
+ 374               		ldi r30,lo8(24)
+ 375               		mov r2,r30
+ 376               		mov r3,__zero_reg__
+ 377 00f4 F1E1      	.L153:
+ 378 00f6 4F2E      	.LBB171:
+ 379               	.LBB172:
+ 381               	.LM38:
+ 448:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** dif
+ 449:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 450:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 451:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	for(;;) 
+ 452:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 	{
+ 453:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		val = recvchar();
+ 454:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Autoincrement?
+ 455:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		if (val == 'a') 
+ 456:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 457:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar('Y');			// Autoincrement is quicker
+ 458:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 459:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		//write address
+ 460:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 461:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'A') 
+ 462:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 463:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			address = recvchar();		//read address 8 MSB
+ 464:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			address = (address<<8) | recvchar();
+ 465:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar('\r');
+ 466:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 467:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Buffer load support
+ 468:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 469:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'b') 
+ 470:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 471:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar('Y');					// Report buffer load supported
+ 472:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar((sizeof(gBuffer) >> 8) & 0xFF);	// Report buffer size in bytes
+ 473:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar(sizeof(gBuffer) & 0xFF);
+ 474:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 475:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Start buffer load
+ 476:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 477:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'B') 
+ 478:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 479:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			pagebuf_t size;
+ 480:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			size = recvchar() << 8;				// Load high byte of buffersize
+ 481:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			size |= recvchar();				// Load low byte of buffersize
+ 482:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			val = recvchar();				// Load memory type ('E' or 'F')
+ 483:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			recvBuffer(size);
+ 484:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 485:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			if (device == DEVTYPE) 
+ 486:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 487:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				if (val == 'F') 
+ 488:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				{
+ 489:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				address = writeFlashPage(address, size);
+ 490:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				} 
+ 491:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				else if (val == 'E') 
+ 492:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				{
+ 493:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				address = writeEEpromPage(address, size);
+ 494:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				}
+ 495:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				sendchar('\r');
+ 496:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 497:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else 
+ 498:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 499:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar(0);
+ 500:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			}
+ 501:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 502:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Block read
+ 503:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 504:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'g') 
+ 505:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 506:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			pagebuf_t size;
+ 507:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			size = recvchar() << 8;				// Load high byte of buffersize
+ 508:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			size |= recvchar();				// Load low byte of buffersize
+ 509:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			val = recvchar();				// Get memtype
+ 510:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 511:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			if (val == 'F') 
+ 512:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 513:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			address = readFlashPage(address, size);
+ 514:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 515:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else if (val == 'E') 
+ 516:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 517:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			address = readEEpromPage(address, size);
+ 518:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			}
+ 519:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 520:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Chip erase
+ 521:e:\PROG_AVR\Bootloader_test_m328p\src\main.c ****  		} 
+ 522:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'e') 
+ 523:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 524:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		if (device == DEVTYPE) 
+ 525:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 526:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			eraseFlash();
+ 527:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			}
+ 528:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar('\r');
+ 529:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 530:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Exit upgrade
+ 531:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 532:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'E') 
+ 533:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 534:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		wdt_enable(EXIT_WDT_TIME); // Enable Watchdog Timer to give reset
+ 535:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar('\r');
+ 536:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 537:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#ifdef WRITELOCKBITS
+ 538:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			#warning "Extension 'WriteLockBits' enabled"
+ 539:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// TODO: does not work reliably
+ 540:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// write lockbits
+ 382               	
+ 383               		rjmp .L153
+ 385 00fa 2E2E      	.LM39:
+ 386 00fc 312C      		lds r25,198
+ 387               	.LBE172:
+ 388               	.LBE171:
+ 390               	.LM40:
+ 391               		cpi r25,lo8(97)
+ 392 00fe 8091 C000 		brne .L25
+ 393 0102 87FF      	.L90:
+ 394 0104 00C0      	.LBB173:
+ 395               	.LBB174:
+ 397 0106 9091 C600 	.LM41:
+ 398               		lds r24,192
+ 399               		sbrs r24,5
+ 400               		rjmp .L90
+ 402 010a 9136      	.LM42:
+ 403 010c 01F4      		ldi r24,lo8(89)
+ 404               		rjmp .L154
+ 405               	.L25:
+ 406               	.LBE174:
+ 407               	.LBE173:
+ 409 010e 8091 C000 	.LM43:
+ 410 0112 85FF      		cpi r25,lo8(65)
+ 411 0114 00C0      		brne .L27
+ 412               	.L91:
+ 413               	.LBB175:
+ 414 0116 89E5      	.LBB176:
+ 416               	.LM44:
+ 417               		lds r24,192
+ 418               		sbrs r24,7
+ 419               		rjmp .L91
+ 421 011a 9134      	.LM45:
+ 422 011c 01F4      		lds r18,198
+ 423               	.L29:
+ 424               	.LBE176:
+ 425               	.LBE175:
+ 426               	.LBB177:
+ 427               	.LBB178:
+ 429 0122 87FF      	.LM46:
+ 430 0124 00C0      		lds r24,192
+ 431               		sbrs r24,7
+ 432               		rjmp .L29
+ 434               	.LM47:
+ 435               		lds r25,198
+ 436               	.L30:
+ 437               	.LBE178:
+ 438               	.LBE177:
+ 439               	.LBB179:
+ 440               	.LBB148:
+ 442 012e 87FF      	.LM48:
+ 443 0130 00C0      		lds r24,192
+ 444               		sbrs r24,5
+ 445               		rjmp .L30
+ 446 0132 9091 C600 	.LBE148:
+ 447               	.LBE179:
+ 449               	.LM49:
+ 450               		mov r7,r18
+ 451               		clr r6
+ 452               		mov r10,r25
+ 453               		clr r11
+ 454 0136 8091 C000 		or r10,r6
+ 455 013a 85FF      		or r11,r7
+ 456 013c 00C0      		rjmp .L158
+ 457               	.L27:
+ 459               	.LM50:
+ 460               		cpi r25,lo8(98)
+ 461 013e 722E      		brne .L31
+ 462 0140 6624      	.L92:
+ 463 0142 A92E      	.LBB180:
+ 464 0144 BB24      	.LBB181:
+ 466 0148 B728      	.LM51:
+ 467 014a 00C0      		lds r24,192
+ 468               		sbrs r24,5
+ 469               		rjmp .L92
+ 471 014c 9236      	.LM52:
+ 472 014e 01F4      		ldi r30,lo8(89)
+ 473               		sts 198,r30
+ 474               	.L33:
+ 475               	.LBE181:
+ 476               	.LBE180:
+ 477               	.LBB182:
+ 478 0150 8091 C000 	.LBB183:
+ 480 0156 00C0      	.LM53:
+ 481               		lds r24,192
+ 482               		sbrs r24,5
+ 483 0158 E9E5      		rjmp .L33
+ 485               	.LM54:
+ 486               		sts 198,__zero_reg__
+ 487               	.L34:
+ 488               	.LBE183:
+ 489               	.LBE182:
+ 490               	.LBB184:
+ 491               	.LBB185:
+ 493 0162 85FF      	.LM55:
+ 494 0164 00C0      		lds r24,192
+ 495               		sbrs r24,5
+ 496               		rjmp .L34
+ 498               	.LM56:
+ 499               		ldi r31,lo8(-128)
+ 500               		rjmp .L157
+ 501               	.L31:
+ 502               	.LBE185:
+ 503               	.LBE184:
+ 505 016a 8091 C000 	.LM57:
+ 506 016e 85FF      		cpi r25,lo8(66)
+ 507 0170 00C0      		breq .+2
+ 508               		rjmp .L35
+ 509               	.L96:
+ 510 0172 F0E8      	.LBB186:
+ 511 0174 00C0      	.LBB154:
+ 512               	.LBB155:
+ 514               	.LM58:
+ 515               		lds r24,192
+ 516               		sbrs r24,7
+ 517 0176 9234      		rjmp .L96
+ 519 017a 00C0      	.LM59:
+ 520               		lds r24,198
+ 521               	.L37:
+ 522               	.LBE155:
+ 523               	.LBE154:
+ 524               	.LBB156:
+ 525               	.LBB157:
+ 527 0180 87FF      	.LM60:
+ 528 0182 00C0      		lds r24,192
+ 529               		sbrs r24,7
+ 530               		rjmp .L37
+ 532               	.LM61:
+ 533               		lds r13,198
+ 534               	.L38:
+ 535               	.LBE157:
+ 536               	.LBE156:
+ 537               	.LBB158:
+ 538               	.LBB159:
+ 540 018c 87FF      	.LM62:
+ 541 018e 00C0      		lds r24,192
+ 542               		sbrs r24,7
+ 543               		rjmp .L38
+ 545               	.LM63:
+ 546               		lds r18,198
+ 547               		ldi r25,lo8(0)
+ 548               		ldi r30,lo8(gBuffer)
+ 549               		ldi r31,hi8(gBuffer)
+ 550               	.L41:
+ 551               	.LBE159:
+ 552 0194 8091 C000 	.LBE158:
+ 553 0198 87FF      	.LBB160:
+ 554 019a 00C0      	.LBB161:
+ 556               	.LM64:
+ 557 019c 2091 C600 		cp r25,r13
+ 558 01a0 90E0      		brlo .L95
+ 559 01a2 E0E0      		ldi r24,lo8(-1)
+ 560 01a4 F0E0      		rjmp .L40
+ 561               	.L95:
+ 562               	.LBB162:
+ 563               	.LBB163:
+ 565               	.LM65:
+ 566               		lds r24,192
+ 567               		sbrs r24,7
+ 568 01a6 9D15      		rjmp .L95
+ 570 01aa 8FEF      	.LM66:
+ 571 01ac 00C0      		lds r24,198
+ 572               	.L40:
+ 573               	.LBE163:
+ 574               	.LBE162:
+ 576               	.LM67:
+ 577 01ae 8091 C000 		st Z+,r24
+ 579 01b4 00C0      	.LM68:
+ 580               		subi r25,lo8(-(1))
+ 581               		cpi r25,lo8(-128)
+ 582 01b6 8091 C600 		brne .L41
+ 583               	.LBE161:
+ 584               	.LBE160:
+ 586               	.LM69:
+ 587               		ldi r22,lo8(115)
+ 588 01ba 8193      		cp r5,r22
+ 589               		breq .+2
+ 590               		rjmp .L94
+ 592 01be 9038      	.LM70:
+ 593 01c0 01F4      		cpi r18,lo8(70)
+ 594               		breq .+2
+ 595               		rjmp .L43
+ 596               	.LBB164:
+ 597               	.LBB152:
+ 599 01c4 5616      	.LM71:
+ 600 01c6 01F0      		movw r14,r10
+ 601 01c8 00C0      		ldi r16,lo8(0)
+ 602               		ldi r17,hi8(0)
+ 603               		lsl r14
+ 604 01ca 2634      		rol r15
+ 605 01cc 01F0      		rol r16
+ 606 01ce 00C0      		rol r17
+ 607               		movw r20,r16
+ 608               		movw r18,r14
+ 609               		ldi r26,lo8(gBuffer)
+ 610               		ldi r27,hi8(gBuffer)
+ 611 01d0 7501      	.L44:
+ 613 01d4 10E0      	.LM72:
+ 614 01d6 EE0C      		ld r24,X
+ 615 01d8 FF1C      		ldi r25,lo8(0)
+ 617 01dc 111F      	.LM73:
+ 618 01de A801      		adiw r26,1
+ 619 01e0 9701      		ld r9,X
+ 620 01e2 A0E0      		sbiw r26,1
+ 621 01e4 B0E0      		clr r8
+ 622               		or r24,r8
+ 623               		or r25,r9
+ 625 01e6 8C91      	.LM74:
+ 626 01e8 90E0      		adiw r26,2
+ 628               	.LM75:
+ 629 01ea 1196      		ldi r22,lo8(1)
+ 630 01ec 9C90      		movw r30,r18
+ 631 01ee 1197      	/* #APP */
+ 632 01f0 8824      	 ;  196 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 633 01f2 8829      		movw  r0, r24
+ 634 01f4 9929      		sts 87, r22
+ 635               		spm
+ 636               		clr  r1
+ 637 01f6 1296      		
+ 638               	 ;  0 "" 2
+ 640 01f8 61E0      	.LM76:
+ 641 01fa F901      	/* #NOAPP */
+ 642               		subi r18,lo8(-(2))
+ 643               		sbci r19,hi8(-(2))
+ 644 01fc 0C01      		sbci r20,hlo8(-(2))
+ 645 01fe 6093 5700 		sbci r21,hhi8(-(2))
+ 647 0204 1124      	.LM77:
+ 648               		ldi r24,lo8(-2)
+ 649               		add r13,r24
+ 651               	.LM78:
+ 652               		brne .L44
+ 654 0208 3F4F      	.LM79:
+ 655 020a 4F4F      		ldi r22,lo8(5)
+ 656 020c 5F4F      		movw r30,r14
+ 657               	/* #APP */
+ 658               	 ;  203 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 659 020e 8EEF      		sts 87, r22
+ 660 0210 D80E      		spm
+ 661               		
+ 662               	 ;  0 "" 2
+ 663 0212 01F4      	/* #NOAPP */
+ 664               	.L45:
+ 665               	.LBE152:
+ 667 0216 F701      	.LM80:
+ 668               		in __tmp_reg__,87-32
+ 669               		sbrc __tmp_reg__,0
+ 670 0218 6093 5700 		rjmp .L45
+ 671 021c E895      	.LBB153:
+ 673               	.LM81:
+ 674               	/* #APP */
+ 675               	 ;  205 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 676               		sts 87, r4
+ 677               		spm
+ 678               		
+ 679 021e 07B6      	 ;  0 "" 2
+ 681 0222 00C0      	.LM82:
+ 682               	/* #NOAPP */
+ 683               		lsr r21
+ 684               		ror r20
+ 685               		ror r19
+ 686               		ror r18
+ 687 0224 4092 5700 		movw r10,r18
+ 688 0228 E895      		rjmp .L93
+ 689               	.L43:
+ 690               	.LBE153:
+ 691               	.LBE164:
+ 693               	.LM83:
+ 694 022a 5695      		cpi r18,lo8(69)
+ 695 022c 4795      		brne .L93
+ 696 022e 3795      		mov r15,r13
+ 697 0230 2795      		movw r16,r10
+ 698 0232 5901      		ldi r28,lo8(gBuffer)
+ 699 0234 00C0      		ldi r29,hi8(gBuffer)
+ 700               	.L47:
+ 701               	.LBB165:
+ 702               	.LBB166:
+ 704               	.LM84:
+ 705 0236 2534      		ld r22,Y+
+ 706 0238 01F4      		movw r24,r16
+ 707 023a FD2C      		call __eewr_byte_m328p
+ 709 023e C0E0      	.LM85:
+ 710 0240 D0E0      		subi r16,lo8(-(1))
+ 711               		sbci r17,hi8(-(1))
+ 713               	.LM86:
+ 714               		dec r15
+ 716 0242 6991      	.LM87:
+ 717 0244 C801      		brne .L47
+ 718 0246 0E94 0000 		dec r13
+ 719               		mov r24,r13
+ 720               		ldi r25,lo8(0)
+ 721 024a 0F5F      		adiw r24,1
+ 722 024c 1F4F      		add r10,r24
+ 723               		adc r11,r25
+ 724               	.L93:
+ 725 024e FA94      	.LBE166:
+ 726               	.LBE165:
+ 727               	.LBB167:
+ 728 0250 01F4      	.LBB168:
+ 730 0254 8D2D      	.LM88:
+ 731 0256 90E0      		lds r24,192
+ 732 0258 0196      		sbrs r24,5
+ 733 025a A80E      		rjmp .L93
+ 734 025c B91E      		rjmp .L158
+ 735               	.L94:
+ 736               	.LBE168:
+ 737               	.LBE167:
+ 738               	.LBB169:
+ 739               	.LBB170:
+ 740               		lds r24,192
+ 741               		sbrs r24,5
+ 742 025e 8091 C000 		rjmp .L94
+ 743 0262 85FF      		rjmp .L159
+ 744 0264 00C0      	.L35:
+ 745 0266 00C0      	.LBE170:
+ 746               	.LBE169:
+ 747               	.LBE186:
+ 749               	.LM89:
+ 750               		cpi r25,lo8(103)
+ 751 0268 8091 C000 		breq .+2
+ 752 026c 85FF      		rjmp .L48
+ 753 026e 00C0      	.L97:
+ 754 0270 00C0      	.LBB187:
+ 755               	.LBB188:
+ 756               	.LBB189:
+ 758               	.LM90:
+ 759               		lds r24,192
+ 760               		sbrs r24,7
+ 761 0272 9736      		rjmp .L97
+ 763 0276 00C0      	.LM91:
+ 764               		lds r24,198
+ 765               	.L50:
+ 766               	.LBE189:
+ 767               	.LBE188:
+ 768               	.LBB190:
+ 769               	.LBB191:
+ 771 027c 87FF      	.LM92:
+ 772 027e 00C0      		lds r24,192
+ 773               		sbrs r24,7
+ 774               		rjmp .L50
+ 776               	.LM93:
+ 777               		lds r14,198
+ 778               	.L51:
+ 779               	.LBE191:
+ 780               	.LBE190:
+ 781               	.LBB192:
+ 782               	.LBB193:
+ 784 0288 87FF      	.LM94:
+ 785 028a 00C0      		lds r24,192
+ 786               		sbrs r24,7
+ 787               		rjmp .L51
+ 789               	.LM95:
+ 790               		lds r24,198
+ 791               	.LBE193:
+ 792               	.LBE192:
+ 794               	.LM96:
+ 795               		cpi r24,lo8(70)
+ 796 0290 8091 C000 		brne .L52
+ 797 0294 87FF      	.LBB194:
+ 798 0296 00C0      	.LBB195:
+ 800               	.LM97:
+ 801 0298 8091 C600 		movw r18,r10
+ 802               		ldi r20,lo8(0)
+ 803               		ldi r21,hi8(0)
+ 804               		lsl r18
+ 805               		rol r19
+ 806 029c 8634      		rol r20
+ 807 029e 01F4      		rol r21
+ 808               	.L55:
+ 809               	.LBB196:
+ 811               	.LM98:
+ 812 02a0 9501      		movw r30,r18
+ 813 02a2 40E0      	/* #APP */
+ 814 02a4 50E0      	 ;  241 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 815 02a6 220F      		lpm r22, Z+
+ 816 02a8 331F      		lpm r23, Z
+ 817 02aa 441F      		
+ 818 02ac 551F      	 ;  0 "" 2
+ 819               	/* #NOAPP */
+ 820               	.L53:
+ 821               	.LBE196:
+ 822               	.LBB197:
+ 823 02ae F901      	.LBB198:
+ 825               	.LM99:
+ 826 02b0 6591      		lds r24,192
+ 827 02b2 7491      		sbrs r24,5
+ 828               		rjmp .L53
+ 830               	.LM100:
+ 831               		sts 198,r22
+ 832               	.L54:
+ 833               	.LBE198:
+ 834               	.LBE197:
+ 835               	.LBB199:
+ 836               	.LBB200:
+ 838 02b8 85FF      	.LM101:
+ 839 02ba 00C0      		lds r24,192
+ 840               		sbrs r24,5
+ 841               		rjmp .L54
+ 843               	.LM102:
+ 844               		sts 198,r23
+ 845               	.LBE200:
+ 846               	.LBE199:
+ 848               	.LM103:
+ 849               		subi r18,lo8(-(2))
+ 850 02c0 8091 C000 		sbci r19,hi8(-(2))
+ 851 02c4 85FF      		sbci r20,hlo8(-(2))
+ 852 02c6 00C0      		sbci r21,hhi8(-(2))
+ 854               	.LM104:
+ 855 02c8 7093 C600 		ldi r24,lo8(-2)
+ 856               		add r14,r24
+ 858               	.LM105:
+ 859               		brne .L55
+ 861 02ce 3F4F      	.LM106:
+ 862 02d0 4F4F      		lsr r21
+ 863 02d2 5F4F      		ror r20
+ 864               		ror r19
+ 865               		ror r18
+ 866 02d4 8EEF      		movw r10,r18
+ 867 02d6 E80E      		rjmp .L153
+ 868               	.L52:
+ 869               	.LBE195:
+ 870 02d8 01F4      	.LBE194:
+ 872               	.LM107:
+ 873 02da 5695      		cpi r24,lo8(69)
+ 874 02dc 4795      		breq .+2
+ 875 02de 3795      		rjmp .L153
+ 876 02e0 2795      		mov r15,r14
+ 877 02e2 5901      		movw r16,r10
+ 878 02e4 00C0      	.L57:
+ 879               	.LBB201:
+ 881               	.LM108:
+ 882               		movw r24,r16
+ 883               		call __eerd_byte_m328p
+ 884 02e6 8534      		mov r25,r24
+ 885 02e8 01F0      	.L56:
+ 886 02ea 00C0      	.LBB202:
+ 887 02ec FE2C      	.LBB203:
+ 888 02ee 8501      	.LBB204:
+ 890               	.LM109:
+ 891               		lds r24,192
+ 892               		sbrs r24,5
+ 893 02f0 C801      		rjmp .L56
+ 895 02f6 982F      	.LM110:
+ 896               		sts 198,r25
+ 897               	.LBE204:
+ 898               	.LBE203:
+ 900               	.LM111:
+ 901               		subi r16,lo8(-(1))
+ 902 02f8 8091 C000 		sbci r17,hi8(-(1))
+ 904 02fe 00C0      	.LM112:
+ 905               		dec r15
+ 907 0300 9093 C600 	.LM113:
+ 908               		brne .L57
+ 909               		dec r14
+ 910               		mov r24,r14
+ 911               		ldi r25,lo8(0)
+ 912 0304 0F5F      		adiw r24,1
+ 913 0306 1F4F      		add r10,r24
+ 914               		adc r11,r25
+ 915               		rjmp .L153
+ 916 0308 FA94      	.L48:
+ 917               	.LBE202:
+ 918               	.LBE201:
+ 919 030a 01F4      	.LBE187:
+ 921 030e 8E2D      	.LM114:
+ 922 0310 90E0      		cpi r25,lo8(101)
+ 923 0312 0196      		brne .L58
+ 925 0316 B91E      	.LM115:
+ 926 0318 00C0      		ldi r30,lo8(115)
+ 927               		cp r5,r30
+ 928               		brne .L98
+ 929               		ldi r30,lo8(0)
+ 930               		ldi r31,hi8(0)
+ 931               	.L61:
+ 932               	.LBB205:
+ 933 031a 9536      	.LBB206:
+ 935               	.LM116:
+ 936               		ldi r22,lo8(3)
+ 937 031e E3E7      	/* #APP */
+ 938 0320 5E16      	 ;  167 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 939 0322 01F4      		sts 87, r22
+ 940 0324 E0E0      		spm
+ 941 0326 F0E0      		
+ 942               	 ;  0 "" 2
+ 943               	/* #NOAPP */
+ 944               	.L60:
+ 945               	.LBE206:
+ 947 0328 63E0      	.LM117:
+ 948               		in __tmp_reg__,87-32
+ 949               		sbrc __tmp_reg__,0
+ 950 032a 6093 5700 		rjmp .L60
+ 951 032e E895      		subi r30,lo8(-(128))
+ 952               		sbci r31,hi8(-(128))
+ 953               	.LBB207:
+ 955               	.LM118:
+ 956               		ldi r24,hi8(31744)
+ 957               		cpi r30,lo8(31744)
+ 958               		cpc r31,r24
+ 959 0330 07B6      		brne .L61
+ 961 0334 00C0      	.LM119:
+ 962 0336 E058      	/* #APP */
+ 963 0338 FF4F      	 ;  171 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 964               		sts 87, r4
+ 965               		spm
+ 966               		
+ 967 033a 8CE7      	 ;  0 "" 2
+ 968 033c E030      	/* #NOAPP */
+ 969 033e F807      	.L98:
+ 970 0340 01F4      	.LBE207:
+ 971               	.LBE205:
+ 972               	.LBB208:
+ 973               	.LBB209:
+ 975 0342 4092 5700 	.LM120:
+ 976 0346 E895      		lds r24,192
+ 977               		sbrs r24,5
+ 978               		rjmp .L98
+ 979               		rjmp .L158
+ 980               	.L58:
+ 981               	.LBE209:
+ 982               	.LBE208:
+ 984               	.LM121:
+ 985               		cpi r25,lo8(69)
+ 986               		brne .L62
+ 988 034c 85FF      	.LM122:
+ 989 034e 00C0      		ldi r30,lo8(12)
+ 990 0350 00C0      	/* #APP */
+ 991               	 ;  540 "e:\PROG_AVR\Bootloader_test_m328p\src\main.c" 1
+ 992               		in __tmp_reg__,__SREG__
+ 993               		cli
+ 994               		wdr
+ 995               		sts 96,r2
+ 996 0352 9534      		out __SREG__,__tmp_reg__
+ 997 0354 01F4      		sts 96,r30
+ 998               		
+ 999               	 ;  0 "" 2
+ 1000 0356 ECE0      	/* #NOAPP */
+ 1001               	.L63:
+ 1002               	.LBB210:
+ 1003 0358 0FB6      	.LBB211:
+ 1005 035c A895      	.LM123:
+ 1006 035e 2092 6000 		lds r24,192
+ 1007 0362 0FBE      		sbrs r24,5
+ 1008 0364 E093 6000 		rjmp .L63
+ 1009               		rjmp .L158
+ 1010               	.L62:
+ 1011               	.LBE211:
+ 1012               	.LBE210:
+ 1014               	.LM124:
+ 1015               		cpi r25,lo8(80)
+ 1016               		brne .L64
+ 1017 0368 8091 C000 	.L99:
+ 1018 036c 85FF      	.LBB212:
+ 1019 036e 00C0      	.LBB213:
+ 1021               	.LM125:
+ 1022               		lds r24,192
+ 1023               		sbrs r24,5
+ 541:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** ockBits' enabled"
+ 542:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// TODO: does not work reliably
+ 543:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// write lockbits
+ 544:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 545:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else if (val == 'l') 
+ 546:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 547:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			if (device == DEVTYPE) 
+ 548:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				{
+ 549:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				// write_lock_bits(recvchar());
+ 550:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				boot_lock_bits_set(recvchar());	// boot.h takes care of mask
+ 551:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				boot_spm_busy_wait();
+ 552:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 				}
+ 553:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar('\r');
+ 554:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#endif
+ 555:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Enter programming mode
+ 556:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 557:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'P') 
+ 558:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 559:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar('\r');
+ 560:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 1024               	tabn	68,0,566,.LM126-.LFBB3
+ 1025               	.LM126:
+ 1026 0372 9035      		cpi r25,lo8(76)
+ 1027 0374 01F4      		brne .L66
+ 1028               	.L100:
+ 1029               	.LBB214:
+ 1030               	.LBB215:
+ 1032               	.LM127:
+ 1033 0376 8091 C000 		lds r24,192
+ 1034 037a 85FF      		sbrs r24,5
+ 1035 037c 00C0      		rjmp .L100
+ 1036 037e 00C0      		rjmp .L158
+ 1037               	.L66:
+ 1038               	.LBE215:
+ 1039               	.LBE214:
+ 561:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** ng mode
+ 562:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 563:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'P') 
+ 564:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 565:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar('\r');
+ 566:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 1040               	,.LM128-.LFBB3
+ 1041               	.LM128:
+ 1042 0380 9C34      		cpi r25,lo8(112)
+ 1043 0382 01F4      		brne .L68
+ 1044               	.L101:
+ 1045               	.LBB216:
+ 1046               	.LBB217:
+ 1048               	.LM129:
+ 1049 0384 8091 C000 		lds r24,192
+ 1050 0388 85FF      		sbrs r24,5
+ 1051 038a 00C0      		rjmp .L101
+ 1053               	.LM130:
+ 1054               		ldi r31,lo8(83)
+ 1055               	.L157:
+ 567:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** ng mode
+ 568:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 569:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'P') 
+ 570:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 571:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar('\r');
+ 1056               	mp .L153
+ 1057               	.L68:
+ 1058 038e 9037      	.LBE217:
+ 1059 0390 01F4      	.LBE216:
+ 1061               	.LM131:
+ 1062               		cpi r25,lo8(116)
+ 1063               		brne .L70
+ 1064               	.L102:
+ 1065 0392 8091 C000 	.LBB218:
+ 1066 0396 85FF      	.LBB219:
+ 1068               	.LM132:
+ 1069               		lds r24,192
+ 1070 039a F3E5      		sbrs r24,5
+ 1071               		rjmp .L102
+ 1073 03a0 00C0      	.LM133:
+ 1074               		ldi r22,lo8(115)
+ 1075               		sts 198,r22
+ 1076               	.L72:
+ 572:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** ming mode
+ 573:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 574:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'P') 
+ 575:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 576:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar('\r');
+ 577:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 578:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Leave programming mode
+ 579:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 580:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'L') 
+ 581:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 582:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar('\r');
+ 583:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// return programmer type
+ 584:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 585:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 'p') 
+ 586:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 587:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar('S');		// always serial programmer
+ 588:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 589:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		#ifdef ENABLEREADFUSELOCK
+ 590:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			#warning "Extension 'ReadFuseLock' enabled"
+ 591:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// read "low" fuse bits
+ 592:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 593:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else if (val == 'F') 
+ 594:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 595:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar(read_fuse_lock(GET_LOW_FUSE_BITS));
+ 596:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 597:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// read lock bits
+ 598:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 599:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else if (val == 'r') 
+ 600:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 601:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar(read_fuse_lock(GET_LOCK_BITS));
+ 602:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 603:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// read high fuse bits
+ 1077               	B220:
+ 1078               	.LBB221:
+ 1080 03a4 01F4      	.LM134:
+ 1081               		lds r24,192
+ 1082               		sbrs r24,5
+ 1083               		rjmp .L72
+ 1084               	.L159:
+ 1086 03a6 8091 C000 	.LM135:
+ 1087 03aa 85FF      		sts 198,__zero_reg__
+ 1088 03ac 00C0      		rjmp .L153
+ 1089               	.L70:
+ 1090               	.LBE221:
+ 1091 03ae 63E7      	.LBE220:
+ 1093               	.LM136:
+ 1094               		mov r24,r25
+ 1095               		subi r24,lo8(-(-120))
+ 1096               		cpi r24,lo8(2)
+ 1097               		brsh .L73
+ 1098               	.L103:
+ 1099               	.LBB222:
+ 1100 03b4 8091 C000 	.LBB223:
+ 1102 03ba 00C0      	.LM137:
+ 1103               		lds r24,192
+ 1104               		sbrs r24,7
+ 1105               		rjmp .L103
+ 1107 03c0 00C0      	.LM138:
+ 1108               		lds r24,198
+ 1109               	.L75:
+ 1110               	.LBE223:
+ 604:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** GET_LOCK_BITS));
+ 605:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 606:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// read high fuse bits
+ 607:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 608:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else if (val == 'N') 
+ 609:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 1111               		68,0,151,.LM139-.LFBB3
+ 1112               	.LM139:
+ 1113 03c2 892F      		lds r24,192
+ 1114 03c4 8857      		sbrs r24,5
+ 1115 03c6 8230      		rjmp .L75
+ 1116 03c8 00F4      		rjmp .L158
+ 1117               	.L73:
+ 1118               	.LBE225:
+ 1119               	.LBE224:
+ 1121               	.LM140:
+ 1122 03ca 8091 C000 		cpi r25,lo8(84)
+ 1123 03ce 87FF      		brne .L76
+ 1124 03d0 00C0      	.L104:
+ 1125               	.LBB226:
+ 1126               	.LBB227:
+ 1128               	.LM141:
+ 1129               		lds r24,192
+ 1130               		sbrs r24,7
+ 1131               		rjmp .L104
+ 1133               	.LM142:
+ 1134               		lds r5,198
+ 1135 03d6 8091 C000 	.L78:
+ 1136 03da 85FF      	.LBE227:
+ 1137 03dc 00C0      	.LBE226:
+ 1138 03de 00C0      	.LBB228:
+ 1139               	.LBB229:
+ 1141               	.LM143:
+ 610:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** bits
+ 611:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 612:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else if (val == 'N') 
+ 613:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 614:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar(read_fuse_lock(GET_HIGH_FUSE_BITS));
+ 615:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// read extended fuse bits
+ 616:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 1142               	141:
+ 1143               		lds r24,192
+ 1144 03e0 9435      		sbrs r24,7
+ 1145 03e2 01F4      		rjmp .L104
+ 1147               	.LM142:
+ 1148               		lds r5,198
+ 1149               	.L78:
+ 1150               	.LBE227:
+ 1151 03e4 8091 C000 	.LBE226:
+ 1152 03e8 87FF      	.LBB228:
+ 1153 03ea 00C0      	.LBB229:
+ 1155               	.LM143:
+ 1156 03ec 5090 C600 		lds r24,192
+ 1157               		sbrs r24,5
+ 1158               		rjmp .L78
+ 1159               	.L158:
+ 1161               	.LM144:
+ 1162               		sts 198,r12
+ 1163               		rjmp .L153
+ 1164 03f0 8091 C000 	.L76:
+ 1165 03f4 85FF      	.LBE229:
+ 1166 03f6 00C0      	.LBE228:
+ 1168               	.LM145:
+ 1169               		cpi r25,lo8(83)
+ 1170 03f8 C092 C600 		brne .L79
+ 1172               	.LM146:
+ 1173               		call send_boot
+ 1174               		rjmp .L153
+ 617:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** ));
+ 618:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			// read extended fuse bits
+ 619:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			} 
+ 620:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			else if (val == 'Q') 
+ 621:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			{
+ 622:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			sendchar(read_fuse_lock(GET_EXTENDED_FUSE_BITS));
+ 1175               	6:
+ 1176               	.LBE229:
+ 1177 03fe 9335      	.LBE228:
+ 623:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** ad_fuse_lock(GET_EXTENDED_FUSE_BITS));
+ 624:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			#endif
+ 1179               		lds r24,192
+ 1180               		sbrs r24,5
+ 1181 0402 0E94 0000 		rjmp .L78
+ 1182 0406 00C0      	.L158:
+ 625:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** k(GET_EXTENDED_FUSE_BITS));
+ 626:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			#endif
+ 627:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 628:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Return device type
+ 1184               	:
+ 1185               		lds r5,198
+ 1186 0408 9635      	.L78:
+ 1187 040a 01F4      	.LBE227:
+ 1188               	.LBE226:
+ 1189               	.LBB228:
+ 1190               	.LBB229:
+ 1192               	.LM143:
+ 1193 040c 8091 C000 		lds r24,192
+ 1194 0410 85FF      		sbrs r24,5
+ 1195 0412 00C0      		rjmp .L78
+ 1196               	.L158:
+ 1198 0414 80E3      	.LM144:
+ 1199 0416 8093 C600 		sts 198,r12
+ 1200               		rjmp .L153
+ 1201               	.L76:
+ 1202               	.LBE229:
+ 1203               	.LBE228:
+ 1205               	.LM145:
+ 1206               		cpi r25,lo8(83)
+ 1207 041a 8091 C000 		brne .L79
+ 1209 0420 00C0      	.LM146:
+ 1210               		call send_boot
+ 1211               		rjmp .L153
+ 1212 0422 E8E3      	.L79:
+ 1214               	.LM147:
+ 1215               		cpi r25,lo8(86)
+ 1216               		brne .L80
+ 629:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 630:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 			#endif
+ 631:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 
+ 632:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// Return device type
+ 633:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 634:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if (val == 't') 
+ 635:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 636:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar(DEVTYPE);
+ 1217               	brne .L79
+ 1219 0426 9337      	.LM146:
+ 1220 0428 01F4      		call send_boot
+ 1221               		rjmp .L153
+ 1222               	.L79:
+ 1224               	.LM147:
+ 1225               		cpi r25,lo8(86)
+ 1226 042a 8091 C000 		brne .L80
+ 1227 042e 85FF      	.L105:
+ 1228 0430 00C0      	.LBB230:
+ 1229               	.LBB231:
+ 1231 0432 FFE0      	.LM148:
+ 1232 0434 F093 C600 		lds r24,192
+ 1233               		sbrs r24,5
+ 1234               		rjmp .L105
+ 1236               	.LM149:
+ 1237               		ldi r24,lo8(48)
+ 1238               		sts 198,r24
+ 1239               	.L82:
+ 1240 0438 8091 C000 	.LBE231:
+ 1241 043c 85FF      	.LBE230:
+ 1242 043e 00C0      	.LBB232:
+ 1243               	.LBB233:
+ 1245 0440 65E9      	.LM150:
+ 1246 0442 6093 C600 		lds r24,192
+ 1247               		sbrs r24,5
+ 1248               		rjmp .L82
+ 1250               	.LM151:
+ 1251               		ldi r30,lo8(56)
+ 1252               		rjmp .L156
+ 1253               	.L80:
+ 1254 0446 8091 C000 	.LBE233:
+ 1255 044a 85FF      	.LBE232:
+ 1257               	.LM152:
+ 1258               		cpi r25,lo8(115)
+ 1259 044e 8EE1      		brne .L83
+ 1260               	.L106:
+ 1261 0450 8093 C600 	.LBB234:
+ 1262 0454 00C0      	.LBB235:
+ 1264               	.LM153:
+ 1265               		lds r24,192
+ 637:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** = 't') 
+ 638:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 639:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar(DEVTYPE);
+ 640:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		sendchar(0);
+ 641:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		// clear and set LED ignored
+ 642:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		} 
+ 643:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		else if ((val == 'x') || (val == 'y')) 
+ 644:e:\PROG_AVR\Bootloader_test_m328p\src\main.c **** 		{
+ 1266               	152:
+ 1267               		cpi r25,lo8(115)
+ 1268 0456 9B31      		brne .L83
+ 1269 0458 01F4      	.L106:
+ 1270 045a 00C0      	.LBB234:
+ 1271               	.LBB235:
+ 1273               	.LM153:
+ 1274               		lds r24,192
+ 1275               		sbrs r24,5
+ 1276 045c 8091 C000 		rjmp .L106
+ 1278 0462 00C0      	.LM154:
+ 1279               		ldi r31,lo8(15)
+ 1280               		sts 198,r31
+ 1281 0464 EFE3      	.L85:
+ 1282               	.LBE235:
+ 1283 0466 E093 C600 	.LBE234:
+ 1284 046a 00C0      	.LBB236:
+ 1285               	.LBB237:
+ 1287               	.LM155:
+ 1288               		lds r24,192
+ 1289               		sbrs r24,5
+ 1290               		rjmp .L85
+ 1292               	.LM156:
+ 1293               		ldi r22,lo8(-107)
+ 1294               		sts 198,r22
+ 1295               	.L86:
+ 1296               	.LBE237:
+ 1297               	.LBE236:
+ 1298               	.LBB238:
+ 1299               	.LBB239:
+ 1301               	.LM157:
+ 1302               		lds r24,192
+ 1303               		sbrs r24,5
+ 1304               		rjmp .L86
+ 1306               	.LM158:
+ 1307               		ldi r24,lo8(30)
+ 1308               	.L154:
+ 1309               		sts 198,r24
+ 1310               		rjmp .L153
+ 1311               	.L83:
+ 1312               	.LBE239:
+ 1313               	.LBE238:
+ 1315               	.LM159:
+ 1316               		cpi r25,lo8(27)
+ 1317               		brne .+2
+ 1318               		rjmp .L153
+ 1319               	.L107:
+ 1320               	.LBB240:
+ 1321               	.LBB241:
+ 1323               	.LM160:
+ 1324               		lds r24,192
+ 1325               		sbrs r24,5
+ 1326               		rjmp .L107
+ 1328               	.LM161:
+ 1329               		ldi r30,lo8(63)
+ 1330               	.L156:
+ 1331               		sts 198,r30
+ 1332               		rjmp .L153
+ 1333               	.LBE241:
+ 1334               	.LBE240:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:2      *ABS*:0000003f __SREG__
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:3      *ABS*:0000003e __SP_H__
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:4      *ABS*:0000003d __SP_L__
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:5      *ABS*:00000034 __CCP__
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:96     .text:00000000 __vector_default
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:110    .text:00000002 send_boot
+C:\Users\al-si\AppData\Local\Temp/ccWa26Gg.s:223    .text:00000066 main
+                            *COM*:00000080 gBuffer
+
+UNDEFINED SYMBOLS
+__eewr_byte_m328p
+__eerd_byte_m328p
+__do_clear_bss

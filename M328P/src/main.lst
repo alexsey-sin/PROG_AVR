@@ -1,0 +1,251 @@
+   1               		.file	"main.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 102               	.global	init
+ 104               	init:
+   1:e:\PROG_AVR\M328P\src\main.c **** #include "main.h"
+   2:e:\PROG_AVR\M328P\src\main.c **** //===============================================================================
+   3:e:\PROG_AVR\M328P\src\main.c **** int main(void){  
+   4:e:\PROG_AVR\M328P\src\main.c **** 	// LoadValuesFromEEPROM();
+   5:e:\PROG_AVR\M328P\src\main.c **** 	
+   6:e:\PROG_AVR\M328P\src\main.c ****     init();
+   7:e:\PROG_AVR\M328P\src\main.c **** 	// InitLCD();
+   8:e:\PROG_AVR\M328P\src\main.c **** 
+   9:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(LCD_CMD, (0b10000000 + code_row[row] + pos));  //установка указателя
+  10:e:\PROG_AVR\M328P\src\main.c **** 
+  11:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(0, 1, 1, (0b10000000 + 0 + 2));	// RS, RW, LED, Byte
+  12:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(1, 1, 1, 0x53);	// RS, RW, LED, Byte
+  13:e:\PROG_AVR\M328P\src\main.c **** 
+  14:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(LCD_CMD, 0b00000001);  //команда очистки дисплея
+  15:e:\PROG_AVR\M328P\src\main.c **** 	
+  16:e:\PROG_AVR\M328P\src\main.c **** 	// // _delay_ms(500);
+  17:e:\PROG_AVR\M328P\src\main.c **** 	// FlapTravel(FLAP_INIT, 0);	//начальное положение заслонки - закрытое
+  18:e:\PROG_AVR\M328P\src\main.c **** 
+  19:e:\PROG_AVR\M328P\src\main.c **** 	// SetBit(PORT_BEEP, B_BEEP);
+  20:e:\PROG_AVR\M328P\src\main.c **** 	// _delay_ms(100);
+  21:e:\PROG_AVR\M328P\src\main.c **** 	// ClrBit(PORT_BEEP, B_BEEP);
+  22:e:\PROG_AVR\M328P\src\main.c **** 
+  23:e:\PROG_AVR\M328P\src\main.c **** // // __asm volatile ("nop");	
+  24:e:\PROG_AVR\M328P\src\main.c **** 	
+  25:e:\PROG_AVR\M328P\src\main.c ****     while(1){
+  26:e:\PROG_AVR\M328P\src\main.c **** 		// if(i2c_STATUS & i2c_Err_msk){
+  27:e:\PROG_AVR\M328P\src\main.c **** 			// SetBit(PORT_LED_L,B_LED_L);
+  28:e:\PROG_AVR\M328P\src\main.c **** 			// _delay_ms(500);
+  29:e:\PROG_AVR\M328P\src\main.c **** 			// ClrBit(PORT_LED_L,B_LED_L);
+  30:e:\PROG_AVR\M328P\src\main.c **** 			// _delay_ms(500);
+  31:e:\PROG_AVR\M328P\src\main.c **** 		// }else ClrBit(PORT_LED_L,B_LED_L);
+  32:e:\PROG_AVR\M328P\src\main.c **** 		// CheckButton();
+  33:e:\PROG_AVR\M328P\src\main.c **** 		// if(BitIsSet(STATUS,ST_BTN)){
+  34:e:\PROG_AVR\M328P\src\main.c **** 			// ExecuteButton();
+  35:e:\PROG_AVR\M328P\src\main.c **** 			// ClrBit(STATUS,ST_BTN);
+  36:e:\PROG_AVR\M328P\src\main.c **** 		// }
+  37:e:\PROG_AVR\M328P\src\main.c **** 		// if(BitIsSet(STATUS,ST_BLC)){
+  38:e:\PROG_AVR\M328P\src\main.c **** 			// ReadMAX6675();
+  39:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(1);
+  40:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(1);
+  41:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(2);
+  42:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(2);
+  43:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(3);
+  44:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(3);
+  45:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(4);
+  46:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(4);
+  47:e:\PROG_AVR\M328P\src\main.c **** 			// if(BitIsClr(STATUS,ST_MENU)){
+  48:e:\PROG_AVR\M328P\src\main.c **** 				// OutVarInfoToLCD();
+  49:e:\PROG_AVR\M328P\src\main.c **** 				// Work();
+  50:e:\PROG_AVR\M328P\src\main.c **** 			// }else{
+  51:e:\PROG_AVR\M328P\src\main.c **** 				// CountMUL_MENU_WAIT--;
+  52:e:\PROG_AVR\M328P\src\main.c **** 					// uint16_t nx;
+  53:e:\PROG_AVR\M328P\src\main.c **** 					// SetFont(font_Tahoma10);
+  54:e:\PROG_AVR\M328P\src\main.c **** 					// SetColor(VGA_YELLOW);
+  55:e:\PROG_AVR\M328P\src\main.c **** 					// nx = DrawString("Выход из меню:  ", 70, 282);
+  56:e:\PROG_AVR\M328P\src\main.c **** 					// nx = OutNumber(CountMUL_MENU_WAIT, nx, 282);
+  57:e:\PROG_AVR\M328P\src\main.c **** 					// DrawString(" сек     ", nx, 282);
+  58:e:\PROG_AVR\M328P\src\main.c **** 				// if(CountMUL_MENU_WAIT == 0){	//выходим из меню
+  59:e:\PROG_AVR\M328P\src\main.c **** 					// ClrBit(STATUS,ST_MENU);
+  60:e:\PROG_AVR\M328P\src\main.c **** 					// BOILER_STATUS = BOILER_STATUS_IDLE;
+  61:e:\PROG_AVR\M328P\src\main.c **** 					// UpdateValuesFromEEPROM();
+  62:e:\PROG_AVR\M328P\src\main.c **** 					// OutFullInfoToLCD();
+  63:e:\PROG_AVR\M328P\src\main.c **** 					// OutVarInfoToLCD();
+  64:e:\PROG_AVR\M328P\src\main.c **** 				// }
+  65:e:\PROG_AVR\M328P\src\main.c **** 			// }
+  66:e:\PROG_AVR\M328P\src\main.c **** 			// ClrBit(STATUS,ST_BLC);
+  67:e:\PROG_AVR\M328P\src\main.c **** 		// }
+  68:e:\PROG_AVR\M328P\src\main.c **** 	}
+  69:e:\PROG_AVR\M328P\src\main.c **** 	
+  70:e:\PROG_AVR\M328P\src\main.c **** 	
+  71:e:\PROG_AVR\M328P\src\main.c **** 		// _delay_ms(10);
+  72:e:\PROG_AVR\M328P\src\main.c **** 	return 0;
+  73:e:\PROG_AVR\M328P\src\main.c **** }
+  74:e:\PROG_AVR\M328P\src\main.c **** //===============================================================================
+  75:e:\PROG_AVR\M328P\src\main.c **** void init(void){
+ 105               	tabn	162,0,0,0
+ 107               	.global	init
+ 109               	init:
+  76:e:\PROG_AVR\M328P\src\main.c **** 	SetBit(ACSR, ACD);//отключим аналоговый компаратор
+ 110               	tabn	162,0,0,0
+ 112 0000 80B7      	.global	init
+ 114 0004 80BF      	init:
+  77:e:\PROG_AVR\M328P\src\main.c **** 	
+  78:e:\PROG_AVR\M328P\src\main.c **** 	// LED L на плате
+  79:e:\PROG_AVR\M328P\src\main.c **** 	DDR_LED_L |= (1 << B_LED_L);
+ 115               	tabn	162,0,0,0
+ 117 0006 259A      	.global	init
+  80:e:\PROG_AVR\M328P\src\main.c **** 	PORT_LED_L &= ~(1 << B_LED_L);
+ 118               	128,0,0,0
+  81:e:\PROG_AVR\M328P\src\main.c **** 	
+  82:e:\PROG_AVR\M328P\src\main.c **** 	PORT_I2C |= ((1 << B_SCL)|(1<<B_SCA));		// Включим подтяжку на ноги, вдруг юзер на резисторы пожмо
+ 121               	(12,5)=*(12,6)=f(0,1),80,16;udata:(13,2),96,16;;",128,0,0,0
+ 125 000e 88B9      	.global	init
+  83:e:\PROG_AVR\M328P\src\main.c **** 	DDR_I2C &= ~((1 << B_SCL)|(1<<B_SCA));
+ 126               	128,0,0,0
+ 130 0014 87B9      	.global	init
+  84:e:\PROG_AVR\M328P\src\main.c **** 
+  85:e:\PROG_AVR\M328P\src\main.c **** 	TWBR = 0x80;         					// Настроим битрейт 58,8kHz
+ 131               	128,0,0,0
+  86:e:\PROG_AVR\M328P\src\main.c **** 	TWSR = 0x00;
+ 135               	3,2),96,16;;",128,0,0,0
+  87:e:\PROG_AVR\M328P\src\main.c **** 	TWCR = 	(0 << TWSTA)| // Бит условия СТАРТ
+ 138               	(12,5)=*(12,6)=f(0,1),80,16;udata:(13,2),96,16;;",128,0,0,0
+  88:e:\PROG_AVR\M328P\src\main.c **** 			(0 << TWSTO)| // Бит условия СТОП
+  89:e:\PROG_AVR\M328P\src\main.c **** 			(0 << TWINT)| // Флаг прерывания TWI: 1 = сбрасываем флаг
+  90:e:\PROG_AVR\M328P\src\main.c **** 			(1 << TWEA)|  // Бит разрешения подтверждения: 0 = временно отключамся от шины
+  91:e:\PROG_AVR\M328P\src\main.c **** 			(1 << TWEN)|  // Бит разрешения работы TWI
+  92:e:\PROG_AVR\M328P\src\main.c **** 			(1 << TWIE);  // Разрешение прерывания TWI
+  93:e:\PROG_AVR\M328P\src\main.c **** 
+  94:e:\PROG_AVR\M328P\src\main.c **** 	// // м/с управления шаговым двигателем заслонки(FLAP) TLE4729G
+  95:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_FH |= (1 << B_FLAP_FH);
+  96:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_FH &= ~(1 << B_FLAP_FH);
+  97:e:\PROG_AVR\M328P\src\main.c **** 
+  98:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_FVR |= (1 << B_FLAP_FVR);
+  99:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_FVR &= ~(1 << B_FLAP_FVR);
+ 100:e:\PROG_AVR\M328P\src\main.c **** 
+ 101:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_REV |= (1 << B_FLAP_REV);
+ 102:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_REV &= ~(1 << B_FLAP_REV);
+ 103:e:\PROG_AVR\M328P\src\main.c **** 
+ 104:e:\PROG_AVR\M328P\src\main.c **** 	// // Датчики DS18B20
+ 105:e:\PROG_AVR\M328P\src\main.c **** 	// //Out	Уличный
+ 106:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_OUT &= ~(1 << B_DS_OUT);
+ 107:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_OUT &= ~(1 << B_DS_OUT);
+ 108:e:\PROG_AVR\M328P\src\main.c **** 
+ 109:e:\PROG_AVR\M328P\src\main.c **** 	// //Room	Комната
+ 110:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_ROOM &= ~(1 << B_DS_ROOM);
+ 111:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_ROOM &= ~(1 << B_DS_ROOM);
+ 112:e:\PROG_AVR\M328P\src\main.c **** 
+ 113:e:\PROG_AVR\M328P\src\main.c **** 	// //Serve (температура подачи)
+ 114:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_SRV &= ~(1 << B_DS_SRV);
+ 115:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_SRV &= ~(1 << B_DS_SRV);
+ 116:e:\PROG_AVR\M328P\src\main.c **** 
+ 117:e:\PROG_AVR\M328P\src\main.c **** 	// //Return (температура обратки)
+ 118:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_RTN &= ~(1 << B_DS_RTN);
+ 119:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_RTN &= ~(1 << B_DS_RTN);
+ 120:e:\PROG_AVR\M328P\src\main.c **** 
+ 121:e:\PROG_AVR\M328P\src\main.c **** 	// // Датчик дымовых газов - термопара мс MAX6675
+ 122:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_SO &= ~(1 << B_TC_SO);
+ 123:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_SO &= ~(1 << B_TC_SO);
+ 124:e:\PROG_AVR\M328P\src\main.c **** 
+ 125:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_CS |= (1 << B_TC_CS);
+ 126:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_CS |= (1 << B_TC_CS);
+ 127:e:\PROG_AVR\M328P\src\main.c **** 
+ 128:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_SCK |= (1 << B_TC_SCK);
+ 129:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_SCK &= ~(1 << B_TC_SCK);
+ 130:e:\PROG_AVR\M328P\src\main.c **** 
+ 131:e:\PROG_AVR\M328P\src\main.c **** 	// //Beep Зуммер активный
+ 132:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_BEEP |= (1 << B_BEEP);
+ 133:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_BEEP &= ~(1 << B_BEEP);
+ 134:e:\PROG_AVR\M328P\src\main.c **** 	
+ 135:e:\PROG_AVR\M328P\src\main.c **** 	// //Preheating реле включения ТЭНов подогрева
+ 136:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_PHEAT |= (1 << B_PHEAT);
+ 137:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_PHEAT &= ~(1 << B_PHEAT);
+ 138:e:\PROG_AVR\M328P\src\main.c **** 	
+ 139:e:\PROG_AVR\M328P\src\main.c **** 	// // // Настройка UART на 38400 bps(бод)
+ 140:e:\PROG_AVR\M328P\src\main.c **** 	// // UBRRH = 0;
+ 141:e:\PROG_AVR\M328P\src\main.c **** 	// // UBRRL = 26;	//UBRR = 16000000/(16 * 38400) - 1 = 26,04 //при U2X = 0
+ 142:e:\PROG_AVR\M328P\src\main.c **** 	// // UCSRB = (1 << TXEN);	// вкл приемник(RXEN=1),вкл передатчик(TXEN=1),вкл прерывание по приему
+ 143:e:\PROG_AVR\M328P\src\main.c **** 	// // // Для доступа к регистру UCSRC ОБЯЗАТЕЛЬНО выставить бит URSEL(кроме ATTiny2313, там его не
+ 144:e:\PROG_AVR\M328P\src\main.c **** 	// // UCSRC = (1 << URSEL)|(3 << UCSZ0);	// асинхронный режим(UMSEL=0), 8 бит(UCSZ2-0=011), 1 стоп
+ 145:e:\PROG_AVR\M328P\src\main.c **** 
+ 146:e:\PROG_AVR\M328P\src\main.c ****     // //1(16бит)таймер - основной тик ~1сек
+ 147:e:\PROG_AVR\M328P\src\main.c ****     // SFIOR |= (1 << PSR10 | 1 << PSR2);   // сброс прескалера таймеров 1 и 0
+ 148:e:\PROG_AVR\M328P\src\main.c ****     // TIMSK |= (1 << OCIE1A);   // разрешить прерывание по совпадению А 1(16разр) счетчика
+ 149:e:\PROG_AVR\M328P\src\main.c ****     
+ 150:e:\PROG_AVR\M328P\src\main.c **** 	// TCNT1H = 0;			// сброс счетных регистров
+ 151:e:\PROG_AVR\M328P\src\main.c **** 	// TCNT1L = 0;
+ 152:e:\PROG_AVR\M328P\src\main.c **** 	// TCCR1A = 0;
+ 153:e:\PROG_AVR\M328P\src\main.c **** 	// TCCR1B = (1 << CS12);// Делитель на 256  1/16000000 = 62,5нс * 256 = 16мкс
+ 154:e:\PROG_AVR\M328P\src\main.c **** 	// //0xF424 это 62500 * 0,000016 = 1,0 сек
+ 155:e:\PROG_AVR\M328P\src\main.c **** 	// OCR1AH = ((0xF424 & 0xFF00) >> 8);
+ 156:e:\PROG_AVR\M328P\src\main.c **** 	// OCR1AL = (0xF424 & 0x00FF);
+ 157:e:\PROG_AVR\M328P\src\main.c **** 	
+ 158:e:\PROG_AVR\M328P\src\main.c **** 	// //2(8бит)таймер - блокировка клавиатуры (снятие)
+ 159:e:\PROG_AVR\M328P\src\main.c **** 	// TIMSK |= (1 << TOIE2);   // разрешить прерывание по переполнению 2(8разр) счетчика
+ 160:e:\PROG_AVR\M328P\src\main.c **** 	// // запускать будем потом
+ 161:e:\PROG_AVR\M328P\src\main.c **** 	// // TCNT2 = 0;
+ 162:e:\PROG_AVR\M328P\src\main.c **** 	// // TCCR2 |= (1 << CS20 | 1 << CS21 | 1 << CS22);   // (8М)0,125мкс*256*1024 = 32мс (переполнени
+ 163:e:\PROG_AVR\M328P\src\main.c **** 	// // TCCR2 |= (1 << CS20 | 1 << CS21 | 1 << CS22);   // (16М)0,0625мкс*256*1024 = 16.4мс (перепол
+ 164:e:\PROG_AVR\M328P\src\main.c **** 	
+ 165:e:\PROG_AVR\M328P\src\main.c **** 	sei();
+ 142               	3,2),96,16;;",128,0,0,0
+ 146 0026 7894      	.global	init
+ 148               	init:
+ 166:e:\PROG_AVR\M328P\src\main.c **** }
+ 149               	tabn	162,0,0,0
+ 151               	.global	init
+ 153               	init:
+ 155               	.LM0:
+ 156               	.LFBB1:
+ 157               	/* prologue: function */
+ 158               	/* frame size = 0 */
+ 160               	.LM1:
+ 161               		in r24,80-32
+ 162               		ori r24,lo8(-128)
+ 163               		out 80-32,r24
+ 165               	.LM2:
+ 166 002a 0E94 0000 		sbi 36-32,5
+ 168 002e 00C0      	.LM3:
+ 169               		cbi 37-32,5
+ 171               	.LM4:
+ 172               		in r24,40-32
+ 173               		ori r24,lo8(48)
+ 174               		out 40-32,r24
+ 176               	.LM5:
+ 177 0000 00        		in r24,39-32
+ 178               		andi r24,lo8(-49)
+ 179               		out 39-32,r24
+ 181               	.LM6:
+ 182               		ldi r24,lo8(-128)
+ 183 0000 3F        		sts 184,r24
+ 185               	.LM7:
+ 186               		sts 185,__zero_reg__
+ 188               	.LM8:
+ 189               		ldi r24,lo8(69)
+ 190               		sts 188,r24
+ 192               	.LM9:
+ 193               	/* #APP */
+ 194               	 ;  165 "e:\PROG_AVR\M328P\src\main.c" 1
+ 195               		sei
+ 196               	 ;  0 "" 2
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:2      *ABS*:0000003f __SREG__
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:3      *ABS*:0000003e __SP_H__
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:4      *ABS*:0000003d __SP_L__
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:5      *ABS*:00000034 __CCP__
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:104    .text:00000000 init
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:158    .text:0000002a main
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:176    .bss:00000000 i2c_STATUS
+C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:182    .data:00000000 i2c_SlaveAddress
+                            *COM*:00000004 i2c_Buffer
+                            *COM*:00000001 i2c_index
+                            *COM*:00000001 i2c_ByteCount
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

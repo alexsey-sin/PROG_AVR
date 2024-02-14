@@ -25,7 +25,7 @@
 #define PinRx			0		//вывод Rx
 #define PinTx			1		//вывод Tx
 #define PinTxRx			2		//вывод управления прием/передача RS485 (0-прием; 1-передача)
-#define PinWH_RW		3		//R/W (1-запись в дисплей, 0-чтение из дисплея)
+#define PinWH_RW		3		//R/W (0-запись в дисплей, 1-чтение из дисплея)
 #define PinWH_RS		4		//RS (1-данные, 0-команда)
 #define PinWH_KLight	5		//Управление подсветкой
 #define PinWH_E			6		//E (тактирование - по заднему фронту => с 1 в 0)
