@@ -37,16 +37,31 @@
 #define i2c_write		0b10000000		// Передача байта к слейву.
 #define i2c_read		0b01000000		// Прием байта от слейва.
 
+#define i2c_LCD_Address	0x27			// Для микросхемы PCF8574 адрес будет: 0100A0A1A2. без перемычек 0b0100111 = 0x27 БИТ ЗАПИСИ СТАРШИЙ
 volatile uint8_t i2c_STATUS = 0;
-volatile uint8_t i2c_SlaveAddress = 0x3F;			// без перемычек
 volatile uint8_t i2c_Buffer[i2c_MaxBuffer];			// Буфер для данных работы в режиме Master
 volatile uint8_t i2c_index;							// Индекс этого буфера
 volatile uint8_t i2c_ByteCount;						// Число байт передаваемых
+volatile uint8_t LCD_Light = 1;						// Подсветка дисплея 0 или 1
 
 #define LCD_RS		0
 #define LCD_RW		1
 #define LCD_E		2
 #define LCD_LED		3
+
+//===============================================================================
+#define LCD_CMD				0		//константа команды
+#define LCD_DATA			1		//константа данных
+//===============================================================================
+char* LabelERR PROGMEM = "Ошибка";
+char* Welcome_1_row PROGMEM = "Yaroslavskiy";
+char* Welcome_2_row PROGMEM = "BEVERAGE FACTORY";
+char* Welcome_4_row PROGMEM = "Strobe v1.0";
+// char* Label_time PROGMEM = "Период(ms): ";
+char* Label_time PROGMEM = "Воздух(%): ";
+char* Label_shift PROGMEM = "Сдвиг(ms): ";
+
+char* row_1 PROGMEM = "01234567890123456789";
 
 // volatile uint8_t STATUS = 0;
 // #define ST_BLC      		0
@@ -265,80 +280,18 @@ volatile uint8_t i2c_ByteCount;						// Число байт передаваемых
 #define DDR_I2C DDRC
 #define B_SCL 5
 #define B_SCA 4
-
-// // м/с управления шаговым двигателем заслонки(FLAP) TLE4729G
-// #define PORT_FLAP_FH PORTA
-// #define DDR_FLAP_FH DDRA
-// #define PIN_FLAP_FH PINA
-// #define B_FLAP_FH 2
-
-// #define PORT_FLAP_FVR PORTB
-// #define DDR_FLAP_FVR DDRB
-// #define PIN_FLAP_FVR PINB
-// #define B_FLAP_FVR 2
-
-// #define PORT_FLAP_REV PORTA
-// #define DDR_FLAP_REV DDRA
-// #define PIN_FLAP_REV PINA
-// #define B_FLAP_REV 1
-
-// // Датчики DS18B20
-// //Out	Уличный
-// #define PORT_DS_OUT PORTD
-// #define DDR_DS_OUT DDRD
-// #define PIN_DS_OUT PIND
-// #define B_DS_OUT 1
-
-// //Room	Комната
-// #define PORT_DS_ROOM PORTD
-// #define DDR_DS_ROOM DDRD
-// #define PIN_DS_ROOM PIND
-// #define B_DS_ROOM 2
-
-// //Serve (температура подачи)
-// #define PORT_DS_SRV PORTD
-// #define DDR_DS_SRV DDRD
-// #define PIN_DS_SRV PIND
-// #define B_DS_SRV 3
-
-// //Return (температура обратки)
-// #define PORT_DS_RTN PORTD
-// #define DDR_DS_RTN DDRD
-// #define PIN_DS_RTN PIND
-// #define B_DS_RTN 4
-
-// // Датчик дымовых газов - термопара мс MAX6675
-// #define PORT_TC_SO PORTD
-// #define DDR_TC_SO DDRD
-// #define PIN_TC_SO PIND
-// #define B_TC_SO 5
-
-// #define PORT_TC_CS PORTD
-// #define DDR_TC_CS DDRD
-// #define PIN_TC_CS PIND
-// #define B_TC_CS 6
-
-// #define PORT_TC_SCK PORTD
-// #define DDR_TC_SCK DDRD
-// #define PIN_TC_SCK PIND
-// #define B_TC_SCK 7
-
-// //Beep Зуммер активный
-// #define PORT_BEEP PORTB
-// #define DDR_BEEP DDRB
-// #define PIN_BEEP PINB
-// #define B_BEEP 1
-
-// //Preheating реле включения ТЭНов подогрева
-// #define PORT_PHEAT PORTB
-// #define DDR_PHEAT DDRB
-// #define PIN_PHEAT PINB
-// #define B_PHEAT 3
 //===============================================================================
 void init(void);
 void InitLCD(void);
-void LCD_send_poluByte(uint8_t bt);
-void LCD_send(uint8_t rs, uint8_t rw, uint8_t ld, uint8_t bt);
+void I2C_StartCondition(void);
+void I2C_StopCondition(void);
+void I2C_SendAddress(char addr);
+void I2C_SendByte(char ch);
+void I2C_SendChar(char ch, uint8_t cmd);	// Отправка байта с разбивкой на полубайты со стробирование Е
+void LCD_send_poluChar(uint8_t pch, uint8_t cmd);
+void LCD_write_string(uint8_t row, uint8_t pos, char* str);
+void LCD_ClearDisplay(void);
+// void LCD_send(uint8_t rs, uint8_t rw, uint8_t ld, uint8_t bt);
 // void CheckButton(void);
 // void ExecuteButton(void);
 // void FlapTravel(uint8_t direct, uint16_t steps);
@@ -372,6 +325,7 @@ void LCD_send(uint8_t rs, uint8_t rw, uint8_t ld, uint8_t bt);
 // uint8_t CalculatePercent(uint8_t diskr);
 
 //===============================================================================
+
 /**
 	АВТОМАТ УПРАВЛЕНИЯ ТВЕРДОТОПЛИВНЫМ КОТЛОМ ТЕПЛОДАР ОК-20
 	Датчики:

@@ -4,9 +4,8 @@ int main(void){
 	// LoadValuesFromEEPROM();
 	
     init();
-	// InitLCD();
+	InitLCD();
 
-	// LCD_send(LCD_CMD, (0b10000000 + code_row[row] + pos));  //установка указателя
 
 	// LCD_send(0, 1, 1, (0b10000000 + 0 + 2));	// RS, RW, LED, Byte
 	// LCD_send(1, 1, 1, 0x53);	// RS, RW, LED, Byte
@@ -20,14 +19,88 @@ int main(void){
 	// _delay_ms(100);
 	// ClrBit(PORT_BEEP, B_BEEP);
 
-// // __asm volatile ("nop");	
+// // __asm volatile ("nop");
+	// uint8_t result;
+	// = TWSR & 0xF8;
+	
+	// D0-D3 - не подключены; D4-D7 - подключены к контактам D5-D2
+	// 3 бит - подсветка
+	_delay_ms(200);
+	
+	_delay_ms(50);
+
+
+	// USART_Transmit(TWSR); //читаем статусный регистр
+	// I2C_StartCondition(); //Отправим условие START
+	// I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+	
+	// // LCD_send(LCD_CMD, (0b10000000 + code_row[row] + pos));  //установка указателя
+	// I2C_SendChar(0b10000010, LCD_CMD);
+	
+	// I2C_SendChar(0b01001101, LCD_DATA);
+	// I2C_SendChar('G', LCD_DATA);
+	// I2C_StopCondition(); //Отправим условие STOP
+
+	LCD_write_string(0, 3, Welcome_1_row);		// row, pos, char* str
+	LCD_write_string(1, 1, Welcome_2_row);		// row, pos, char* str
+	LCD_write_string(3, 1, Welcome_4_row);		// row, pos, char* str
+	
+	
+	_delay_ms(5000);
+	
+	LCD_ClearDisplay();
+	
+	LCD_write_string(0, 0, row_1);		// row, pos, char* str
+
+		// uint8_t code_row[4] = {0x00, 0x40, 0x10, 0x50};
+	
+	// I2C_StartCondition(); //Отправим условие START
+	// I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+	
+	// I2C_SendChar(0b10000000, LCD_CMD);
+	// I2C_SendChar('1', LCD_DATA);
+	
+	// I2C_SendChar(0b10000000 + 0x40, LCD_CMD);
+	// I2C_SendChar('2', LCD_DATA);
+	
+	// I2C_SendChar(0b10000000 + 0x60, LCD_CMD);
+	// I2C_SendChar('3', LCD_DATA);
+	
+	// I2C_SendChar(0b10000000 + 0x80, LCD_CMD);
+	// I2C_SendChar('4', LCD_DATA);
+	
+	// uint8_t pos = 191;
+	// for(char i=pos;i<(pos+16);i++){
+		// I2C_SendChar(i, LCD_DATA);
+	// }
+	
+	// pos += 16;
+	// for(char i=pos;i<(pos+16);i++){
+		// I2C_SendChar(i, LCD_DATA);
+	// }
+	
+	// pos += 16;
+	// I2C_SendChar(0b10000000 + 0x10, LCD_CMD);
+	// for(char i=pos;i<(pos+16);i++){
+		// I2C_SendChar(i, LCD_DATA);
+	// }
+	
+	// pos += 16;
+	// for(char i=pos;i<(pos+16);i++){
+		// I2C_SendChar(i, LCD_DATA);
+	// }
+	// I2C_StopCondition(); //Отправим условие STOP
+	
+	
+	
+	
 	
     while(1){
 		// if(i2c_STATUS & i2c_Err_msk){
-			// SetBit(PORT_LED_L,B_LED_L);
-			// _delay_ms(500);
-			// ClrBit(PORT_LED_L,B_LED_L);
-			// _delay_ms(500);
+			SetBit(PORT_LED_L,B_LED_L);
+			_delay_ms(500);
+			ClrBit(PORT_LED_L,B_LED_L);
+			_delay_ms(500);
 		// }else ClrBit(PORT_LED_L,B_LED_L);
 		// CheckButton();
 		// if(BitIsSet(STATUS,ST_BTN)){
@@ -84,14 +157,19 @@ void init(void){
 
 	TWBR = 0x80;         					// Настроим битрейт 58,8kHz
 	TWSR = 0x00;
-	TWCR = 	(0 << TWSTA)| // Бит условия СТАРТ
-			(0 << TWSTO)| // Бит условия СТОП
-			(0 << TWINT)| // Флаг прерывания TWI: 1 = сбрасываем флаг
-			(1 << TWEA)|  // Бит разрешения подтверждения: 0 = временно отключамся от шины
-			(1 << TWEN)|  // Бит разрешения работы TWI
-			(1 << TWIE);  // Разрешение прерывания TWI
+	// TWCR = 	(0 << TWSTA)| // Бит условия СТАРТ
+			// (0 << TWSTO)| // Бит условия СТОП
+			// (0 << TWINT)| // Флаг прерывания TWI: 1 = сбрасываем флаг
+			// (1 << TWEA)|  // Бит разрешения подтверждения: 0 = временно отключамся от шины
+			// (1 << TWEN)|  // Бит разрешения работы TWI
+			// (1 << TWIE);  // Разрешение прерывания TWI
+
+	// TWCR = (1 << TWINT)|(1 << TWSTA)|(1 << TWEN);
+	// while(!(TWCR&(1<<TWINT)));		//подождем пока установится TWIN
+
 
 	// // м/с управления шаговым двигателем заслонки(FLAP) TLE4729G
+	
 	// DDR_FLAP_FH |= (1 << B_FLAP_FH);
 	// PORT_FLAP_FH &= ~(1 << B_FLAP_FH);
 
@@ -164,6 +242,82 @@ void init(void){
 	
 	sei();
 }
+void InitLCD(void){
+	I2C_StartCondition(); //Отправим условие START
+	
+	I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+	LCD_send_poluChar(0b00110000, LCD_CMD);
+	_delay_ms(5);
+	LCD_send_poluChar(0b00100000, LCD_CMD);
+	
+	I2C_SendChar(0b00101000, LCD_CMD);	// 4-бит, 2 строки(N=1), шрифт 5х8(F=0)
+	_delay_ms(5);
+	I2C_SendChar(0b00001000, LCD_CMD);	// выкл.дисплей, выкл.курсор (C=0), курсор не мигает(B=0)
+	_delay_ms(5);
+	I2C_SendChar(0b00000001, LCD_CMD);	// команда очистки дисплея
+	_delay_ms(5);
+	I2C_SendChar(0b00000110, LCD_CMD);	//вывод символов слева-направо(I/D=1), запрет сдвига экрана при выводе символов(SH=0)
+	I2C_SendChar(0b00001100, LCD_CMD);	//вкл.дисплей, выкл.курсор (C=0), курсор не мигает(B=0)
+	I2C_StopCondition(); //Отправим условие STOP
+}
+void I2C_StartCondition(void){
+	TWCR = (1 << TWINT)|(1 << TWSTA)|(1 << TWEN);
+	while(!(TWCR & (1 << TWINT)));//подождем пока установится TWINT
+}
+void I2C_StopCondition(void){
+	TWCR = (1 << TWINT)|(1 << TWSTO)|(1 << TWEN);
+}
+void I2C_SendAddress(char addr){
+	I2C_SendByte(addr << 1); //передаем адрес и бит записи (0)
+}
+void I2C_SendByte(char ch){	// Отправка байта в шину как есть
+	TWDR = ch;							// запишем байт в регистр данных
+	TWCR = (1 << TWINT)|(1 << TWEN);	// включим передачу байта
+	while (!(TWCR & (1 << TWINT)));		// подождем пока установится TWINT
+}
+void I2C_SendChar(char ch, uint8_t cmd){	// Отправка байта с разбивкой на полубайты со стробирование Е
+// ch - посылаемый байт, cmd: 0 - команда, 1 - данные 
+	char t;
+	t = (ch & 0xF0) | (LCD_Light << 3) | cmd;
+	I2C_SendByte(t | (1 << 2));
+	I2C_SendByte(t);
+	t = ((ch & 0x0F) << 4) | (LCD_Light << 3) | cmd;
+	I2C_SendByte(t | (1 << 2));
+	I2C_SendByte(t);
+}
+void LCD_send_poluChar(uint8_t pch, uint8_t cmd){
+// ch - посылаемые 4 старшие бита байта, cmd: 0 - команда, 1 - данные 
+	char t;
+	t = (pch & 0xF0) | (LCD_Light << 3) | cmd;
+	I2C_SendByte(t | (1 << 2));
+	I2C_SendByte(t);
+}
+void LCD_write_string(uint8_t row, uint8_t pos, char* str){
+	uint8_t ib = 0;
+	uint8_t code_row[4] = {0x00, 0x40, 0x14, 0x54};
+	
+	I2C_StartCondition(); //Отправим условие START
+	I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+	
+	I2C_SendChar((0b10000000 + code_row[row] + pos), LCD_CMD);  //установка указателя
+	while(str[ib] != 0){
+		// I2C_SendChar(charTable[(uint8_t)str[ib]], LCD_DATA);
+		I2C_SendChar(str[ib], LCD_DATA);
+		ib++;
+	}
+	I2C_StopCondition(); //Отправим условие STOP
+}
+void LCD_ClearDisplay(void){
+	I2C_StartCondition(); //Отправим условие START
+	I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+	
+	I2C_SendChar(0b00000001, LCD_CMD);
+	_delay_ms(5);
+	
+	I2C_StopCondition(); //Отправим условие STOP
+}
+
+
 // ISR(TWI_vect){ // Прерывание TWI Тут наше все.
 	// switch(TWSR & 0xF8){ // Отсекаем биты прескалера
 		// case 0x00:{								// Bus Fail (автобус сломался)
@@ -414,19 +568,6 @@ void init(void){
 		// TCCR2 = 0;	// таймер 2 стоп
 		// ClrBit(STATUS, ST_BTN_WAIT);
 	// }
-// }
-// void InitLCD(void){
-	// _delay_ms(20);
-	// LCD_send_poluByte(0b00000011);  //8-битный интерфейс (DL=1)
-	// _delay_ms(5);
-	// LCD_send_poluByte(0b00000011);  //8-битный интерфейс (DL=1)
-	// _delay_ms(1);
-	// LCD_send_poluByte(0b00000010);  // 4-бит, 2 строки(N=1), шрифт 5х8(F=0)
-	// LCD_send_poluByte(0b00001000);  //выкл.дисплей, выкл.курсор (C=0), курсор не мигает(B=0)
-	// LCD_send_poluByte(0b00000001);  //команда очистки дисплея
-	// LCD_send_poluByte(0b00000110);  //вывод символов слева-направо(I/D=1), запрет сдвига экрана при выводе символов(SH=0)
-	// LCD_send_poluByte(0b00001100);  //вкл.дисплей, выкл.курсор (C=0), курсор не мигает(B=0)
-	// _delay_ms(5);
 // }
 // void LCD_send_poluByte(uint8_t bt){
 	// while((i2c_STATUS & i2c_type_msk) != 0){}	// Ждем когда канал освободится

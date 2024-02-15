@@ -15,233 +15,1409 @@
    4:e:\PROG_AVR\M328P\src\main.c **** 	// LoadValuesFromEEPROM();
    5:e:\PROG_AVR\M328P\src\main.c **** 	
    6:e:\PROG_AVR\M328P\src\main.c ****     init();
-   7:e:\PROG_AVR\M328P\src\main.c **** 	// InitLCD();
+   7:e:\PROG_AVR\M328P\src\main.c **** 	InitLCD();
    8:e:\PROG_AVR\M328P\src\main.c **** 
-   9:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(LCD_CMD, (0b10000000 + code_row[row] + pos));  //установка указателя
-  10:e:\PROG_AVR\M328P\src\main.c **** 
-  11:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(0, 1, 1, (0b10000000 + 0 + 2));	// RS, RW, LED, Byte
-  12:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(1, 1, 1, 0x53);	// RS, RW, LED, Byte
-  13:e:\PROG_AVR\M328P\src\main.c **** 
-  14:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(LCD_CMD, 0b00000001);  //команда очистки дисплея
-  15:e:\PROG_AVR\M328P\src\main.c **** 	
-  16:e:\PROG_AVR\M328P\src\main.c **** 	// // _delay_ms(500);
-  17:e:\PROG_AVR\M328P\src\main.c **** 	// FlapTravel(FLAP_INIT, 0);	//начальное положение заслонки - закрытое
-  18:e:\PROG_AVR\M328P\src\main.c **** 
-  19:e:\PROG_AVR\M328P\src\main.c **** 	// SetBit(PORT_BEEP, B_BEEP);
-  20:e:\PROG_AVR\M328P\src\main.c **** 	// _delay_ms(100);
-  21:e:\PROG_AVR\M328P\src\main.c **** 	// ClrBit(PORT_BEEP, B_BEEP);
-  22:e:\PROG_AVR\M328P\src\main.c **** 
-  23:e:\PROG_AVR\M328P\src\main.c **** // // __asm volatile ("nop");	
-  24:e:\PROG_AVR\M328P\src\main.c **** 	
-  25:e:\PROG_AVR\M328P\src\main.c ****     while(1){
-  26:e:\PROG_AVR\M328P\src\main.c **** 		// if(i2c_STATUS & i2c_Err_msk){
-  27:e:\PROG_AVR\M328P\src\main.c **** 			// SetBit(PORT_LED_L,B_LED_L);
-  28:e:\PROG_AVR\M328P\src\main.c **** 			// _delay_ms(500);
-  29:e:\PROG_AVR\M328P\src\main.c **** 			// ClrBit(PORT_LED_L,B_LED_L);
-  30:e:\PROG_AVR\M328P\src\main.c **** 			// _delay_ms(500);
-  31:e:\PROG_AVR\M328P\src\main.c **** 		// }else ClrBit(PORT_LED_L,B_LED_L);
-  32:e:\PROG_AVR\M328P\src\main.c **** 		// CheckButton();
-  33:e:\PROG_AVR\M328P\src\main.c **** 		// if(BitIsSet(STATUS,ST_BTN)){
-  34:e:\PROG_AVR\M328P\src\main.c **** 			// ExecuteButton();
-  35:e:\PROG_AVR\M328P\src\main.c **** 			// ClrBit(STATUS,ST_BTN);
-  36:e:\PROG_AVR\M328P\src\main.c **** 		// }
-  37:e:\PROG_AVR\M328P\src\main.c **** 		// if(BitIsSet(STATUS,ST_BLC)){
-  38:e:\PROG_AVR\M328P\src\main.c **** 			// ReadMAX6675();
-  39:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(1);
-  40:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(1);
-  41:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(2);
-  42:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(2);
-  43:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(3);
-  44:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(3);
-  45:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(4);
-  46:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(4);
-  47:e:\PROG_AVR\M328P\src\main.c **** 			// if(BitIsClr(STATUS,ST_MENU)){
-  48:e:\PROG_AVR\M328P\src\main.c **** 				// OutVarInfoToLCD();
-  49:e:\PROG_AVR\M328P\src\main.c **** 				// Work();
-  50:e:\PROG_AVR\M328P\src\main.c **** 			// }else{
-  51:e:\PROG_AVR\M328P\src\main.c **** 				// CountMUL_MENU_WAIT--;
-  52:e:\PROG_AVR\M328P\src\main.c **** 					// uint16_t nx;
-  53:e:\PROG_AVR\M328P\src\main.c **** 					// SetFont(font_Tahoma10);
-  54:e:\PROG_AVR\M328P\src\main.c **** 					// SetColor(VGA_YELLOW);
-  55:e:\PROG_AVR\M328P\src\main.c **** 					// nx = DrawString("Выход из меню:  ", 70, 282);
-  56:e:\PROG_AVR\M328P\src\main.c **** 					// nx = OutNumber(CountMUL_MENU_WAIT, nx, 282);
-  57:e:\PROG_AVR\M328P\src\main.c **** 					// DrawString(" сек     ", nx, 282);
-  58:e:\PROG_AVR\M328P\src\main.c **** 				// if(CountMUL_MENU_WAIT == 0){	//выходим из меню
-  59:e:\PROG_AVR\M328P\src\main.c **** 					// ClrBit(STATUS,ST_MENU);
-  60:e:\PROG_AVR\M328P\src\main.c **** 					// BOILER_STATUS = BOILER_STATUS_IDLE;
-  61:e:\PROG_AVR\M328P\src\main.c **** 					// UpdateValuesFromEEPROM();
-  62:e:\PROG_AVR\M328P\src\main.c **** 					// OutFullInfoToLCD();
-  63:e:\PROG_AVR\M328P\src\main.c **** 					// OutVarInfoToLCD();
-  64:e:\PROG_AVR\M328P\src\main.c **** 				// }
-  65:e:\PROG_AVR\M328P\src\main.c **** 			// }
-  66:e:\PROG_AVR\M328P\src\main.c **** 			// ClrBit(STATUS,ST_BLC);
-  67:e:\PROG_AVR\M328P\src\main.c **** 		// }
-  68:e:\PROG_AVR\M328P\src\main.c **** 	}
-  69:e:\PROG_AVR\M328P\src\main.c **** 	
-  70:e:\PROG_AVR\M328P\src\main.c **** 	
-  71:e:\PROG_AVR\M328P\src\main.c **** 		// _delay_ms(10);
-  72:e:\PROG_AVR\M328P\src\main.c **** 	return 0;
-  73:e:\PROG_AVR\M328P\src\main.c **** }
-  74:e:\PROG_AVR\M328P\src\main.c **** //===============================================================================
-  75:e:\PROG_AVR\M328P\src\main.c **** void init(void){
- 105               	tabn	162,0,0,0
- 107               	.global	init
- 109               	init:
-  76:e:\PROG_AVR\M328P\src\main.c **** 	SetBit(ACSR, ACD);//отключим аналоговый компаратор
- 110               	tabn	162,0,0,0
- 112 0000 80B7      	.global	init
- 114 0004 80BF      	init:
-  77:e:\PROG_AVR\M328P\src\main.c **** 	
-  78:e:\PROG_AVR\M328P\src\main.c **** 	// LED L на плате
-  79:e:\PROG_AVR\M328P\src\main.c **** 	DDR_LED_L |= (1 << B_LED_L);
- 115               	tabn	162,0,0,0
- 117 0006 259A      	.global	init
-  80:e:\PROG_AVR\M328P\src\main.c **** 	PORT_LED_L &= ~(1 << B_LED_L);
- 118               	128,0,0,0
+   9:e:\PROG_AVR\M328P\src\main.c **** 
+  10:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(0, 1, 1, (0b10000000 + 0 + 2));	// RS, RW, LED, Byte
+  11:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(1, 1, 1, 0x53);	// RS, RW, LED, Byte
+  12:e:\PROG_AVR\M328P\src\main.c **** 
+  13:e:\PROG_AVR\M328P\src\main.c **** 	// LCD_send(LCD_CMD, 0b00000001);  //команда очистки дисплея
+  14:e:\PROG_AVR\M328P\src\main.c **** 	
+  15:e:\PROG_AVR\M328P\src\main.c **** 	// // _delay_ms(500);
+  16:e:\PROG_AVR\M328P\src\main.c **** 	// FlapTravel(FLAP_INIT, 0);	//начальное положение заслонки - закрытое
+  17:e:\PROG_AVR\M328P\src\main.c **** 
+  18:e:\PROG_AVR\M328P\src\main.c **** 	// SetBit(PORT_BEEP, B_BEEP);
+  19:e:\PROG_AVR\M328P\src\main.c **** 	// _delay_ms(100);
+  20:e:\PROG_AVR\M328P\src\main.c **** 	// ClrBit(PORT_BEEP, B_BEEP);
+  21:e:\PROG_AVR\M328P\src\main.c **** 
+  22:e:\PROG_AVR\M328P\src\main.c **** // // __asm volatile ("nop");
+  23:e:\PROG_AVR\M328P\src\main.c **** 	// uint8_t result;
+  24:e:\PROG_AVR\M328P\src\main.c **** 	// = TWSR & 0xF8;
+  25:e:\PROG_AVR\M328P\src\main.c **** 	
+  26:e:\PROG_AVR\M328P\src\main.c **** 	// D0-D3 - не подключены; D4-D7 - подключены к контактам D5-D2
+  27:e:\PROG_AVR\M328P\src\main.c **** 	// 3 бит - подсветка
+  28:e:\PROG_AVR\M328P\src\main.c **** 	_delay_ms(200);
+  29:e:\PROG_AVR\M328P\src\main.c **** 	
+  30:e:\PROG_AVR\M328P\src\main.c **** 	_delay_ms(50);
+  31:e:\PROG_AVR\M328P\src\main.c **** 
+  32:e:\PROG_AVR\M328P\src\main.c **** 
+  33:e:\PROG_AVR\M328P\src\main.c **** 	// USART_Transmit(TWSR); //читаем статусный регистр
+  34:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_StartCondition(); //Отправим условие START
+  35:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+  36:e:\PROG_AVR\M328P\src\main.c **** 	
+  37:e:\PROG_AVR\M328P\src\main.c **** 	// // LCD_send(LCD_CMD, (0b10000000 + code_row[row] + pos));  //установка указателя
+  38:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar(0b10000010, LCD_CMD);
+  39:e:\PROG_AVR\M328P\src\main.c **** 	
+  40:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar(0b01001101, LCD_DATA);
+  41:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar('G', LCD_DATA);
+  42:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_StopCondition(); //Отправим условие STOP
+  43:e:\PROG_AVR\M328P\src\main.c **** 
+  44:e:\PROG_AVR\M328P\src\main.c **** 	LCD_write_string(0, 3, Welcome_1_row);		// row, pos, char* str
+  45:e:\PROG_AVR\M328P\src\main.c **** 	LCD_write_string(1, 1, Welcome_2_row);		// row, pos, char* str
+  46:e:\PROG_AVR\M328P\src\main.c **** 	LCD_write_string(3, 1, Welcome_4_row);		// row, pos, char* str
+  47:e:\PROG_AVR\M328P\src\main.c **** 	
+  48:e:\PROG_AVR\M328P\src\main.c **** 	
+  49:e:\PROG_AVR\M328P\src\main.c **** 	_delay_ms(5000);
+  50:e:\PROG_AVR\M328P\src\main.c **** 	
+  51:e:\PROG_AVR\M328P\src\main.c **** 	LCD_ClearDisplay();
+  52:e:\PROG_AVR\M328P\src\main.c **** 	
+  53:e:\PROG_AVR\M328P\src\main.c **** 	LCD_write_string(0, 0, row_1);		// row, pos, char* str
+  54:e:\PROG_AVR\M328P\src\main.c **** 
+  55:e:\PROG_AVR\M328P\src\main.c **** 		// uint8_t code_row[4] = {0x00, 0x40, 0x10, 0x50};
+  56:e:\PROG_AVR\M328P\src\main.c **** 	
+  57:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_StartCondition(); //Отправим условие START
+  58:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+  59:e:\PROG_AVR\M328P\src\main.c **** 	
+  60:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar(0b10000000, LCD_CMD);
+  61:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar('1', LCD_DATA);
+  62:e:\PROG_AVR\M328P\src\main.c **** 	
+  63:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar(0b10000000 + 0x40, LCD_CMD);
+  64:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar('2', LCD_DATA);
+  65:e:\PROG_AVR\M328P\src\main.c **** 	
+  66:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar(0b10000000 + 0x60, LCD_CMD);
+  67:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar('3', LCD_DATA);
+  68:e:\PROG_AVR\M328P\src\main.c **** 	
+  69:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar(0b10000000 + 0x80, LCD_CMD);
+  70:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar('4', LCD_DATA);
+  71:e:\PROG_AVR\M328P\src\main.c **** 	
+  72:e:\PROG_AVR\M328P\src\main.c **** 	// uint8_t pos = 191;
+  73:e:\PROG_AVR\M328P\src\main.c **** 	// for(char i=pos;i<(pos+16);i++){
+  74:e:\PROG_AVR\M328P\src\main.c **** 		// I2C_SendChar(i, LCD_DATA);
+  75:e:\PROG_AVR\M328P\src\main.c **** 	// }
+  76:e:\PROG_AVR\M328P\src\main.c **** 	
+  77:e:\PROG_AVR\M328P\src\main.c **** 	// pos += 16;
+  78:e:\PROG_AVR\M328P\src\main.c **** 	// for(char i=pos;i<(pos+16);i++){
+  79:e:\PROG_AVR\M328P\src\main.c **** 		// I2C_SendChar(i, LCD_DATA);
+  80:e:\PROG_AVR\M328P\src\main.c **** 	// }
   81:e:\PROG_AVR\M328P\src\main.c **** 	
-  82:e:\PROG_AVR\M328P\src\main.c **** 	PORT_I2C |= ((1 << B_SCL)|(1<<B_SCA));		// Включим подтяжку на ноги, вдруг юзер на резисторы пожмо
- 121               	(12,5)=*(12,6)=f(0,1),80,16;udata:(13,2),96,16;;",128,0,0,0
- 125 000e 88B9      	.global	init
-  83:e:\PROG_AVR\M328P\src\main.c **** 	DDR_I2C &= ~((1 << B_SCL)|(1<<B_SCA));
- 126               	128,0,0,0
- 130 0014 87B9      	.global	init
-  84:e:\PROG_AVR\M328P\src\main.c **** 
-  85:e:\PROG_AVR\M328P\src\main.c **** 	TWBR = 0x80;         					// Настроим битрейт 58,8kHz
- 131               	128,0,0,0
-  86:e:\PROG_AVR\M328P\src\main.c **** 	TWSR = 0x00;
- 135               	3,2),96,16;;",128,0,0,0
-  87:e:\PROG_AVR\M328P\src\main.c **** 	TWCR = 	(0 << TWSTA)| // Бит условия СТАРТ
- 138               	(12,5)=*(12,6)=f(0,1),80,16;udata:(13,2),96,16;;",128,0,0,0
-  88:e:\PROG_AVR\M328P\src\main.c **** 			(0 << TWSTO)| // Бит условия СТОП
-  89:e:\PROG_AVR\M328P\src\main.c **** 			(0 << TWINT)| // Флаг прерывания TWI: 1 = сбрасываем флаг
-  90:e:\PROG_AVR\M328P\src\main.c **** 			(1 << TWEA)|  // Бит разрешения подтверждения: 0 = временно отключамся от шины
-  91:e:\PROG_AVR\M328P\src\main.c **** 			(1 << TWEN)|  // Бит разрешения работы TWI
-  92:e:\PROG_AVR\M328P\src\main.c **** 			(1 << TWIE);  // Разрешение прерывания TWI
-  93:e:\PROG_AVR\M328P\src\main.c **** 
-  94:e:\PROG_AVR\M328P\src\main.c **** 	// // м/с управления шаговым двигателем заслонки(FLAP) TLE4729G
-  95:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_FH |= (1 << B_FLAP_FH);
-  96:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_FH &= ~(1 << B_FLAP_FH);
-  97:e:\PROG_AVR\M328P\src\main.c **** 
-  98:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_FVR |= (1 << B_FLAP_FVR);
-  99:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_FVR &= ~(1 << B_FLAP_FVR);
- 100:e:\PROG_AVR\M328P\src\main.c **** 
- 101:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_REV |= (1 << B_FLAP_REV);
- 102:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_REV &= ~(1 << B_FLAP_REV);
- 103:e:\PROG_AVR\M328P\src\main.c **** 
- 104:e:\PROG_AVR\M328P\src\main.c **** 	// // Датчики DS18B20
- 105:e:\PROG_AVR\M328P\src\main.c **** 	// //Out	Уличный
- 106:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_OUT &= ~(1 << B_DS_OUT);
- 107:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_OUT &= ~(1 << B_DS_OUT);
- 108:e:\PROG_AVR\M328P\src\main.c **** 
- 109:e:\PROG_AVR\M328P\src\main.c **** 	// //Room	Комната
- 110:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_ROOM &= ~(1 << B_DS_ROOM);
- 111:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_ROOM &= ~(1 << B_DS_ROOM);
- 112:e:\PROG_AVR\M328P\src\main.c **** 
- 113:e:\PROG_AVR\M328P\src\main.c **** 	// //Serve (температура подачи)
- 114:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_SRV &= ~(1 << B_DS_SRV);
- 115:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_SRV &= ~(1 << B_DS_SRV);
- 116:e:\PROG_AVR\M328P\src\main.c **** 
- 117:e:\PROG_AVR\M328P\src\main.c **** 	// //Return (температура обратки)
- 118:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_RTN &= ~(1 << B_DS_RTN);
- 119:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_RTN &= ~(1 << B_DS_RTN);
- 120:e:\PROG_AVR\M328P\src\main.c **** 
- 121:e:\PROG_AVR\M328P\src\main.c **** 	// // Датчик дымовых газов - термопара мс MAX6675
- 122:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_SO &= ~(1 << B_TC_SO);
- 123:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_SO &= ~(1 << B_TC_SO);
- 124:e:\PROG_AVR\M328P\src\main.c **** 
- 125:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_CS |= (1 << B_TC_CS);
- 126:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_CS |= (1 << B_TC_CS);
- 127:e:\PROG_AVR\M328P\src\main.c **** 
- 128:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_SCK |= (1 << B_TC_SCK);
- 129:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_SCK &= ~(1 << B_TC_SCK);
- 130:e:\PROG_AVR\M328P\src\main.c **** 
- 131:e:\PROG_AVR\M328P\src\main.c **** 	// //Beep Зуммер активный
- 132:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_BEEP |= (1 << B_BEEP);
- 133:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_BEEP &= ~(1 << B_BEEP);
- 134:e:\PROG_AVR\M328P\src\main.c **** 	
- 135:e:\PROG_AVR\M328P\src\main.c **** 	// //Preheating реле включения ТЭНов подогрева
- 136:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_PHEAT |= (1 << B_PHEAT);
- 137:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_PHEAT &= ~(1 << B_PHEAT);
- 138:e:\PROG_AVR\M328P\src\main.c **** 	
- 139:e:\PROG_AVR\M328P\src\main.c **** 	// // // Настройка UART на 38400 bps(бод)
- 140:e:\PROG_AVR\M328P\src\main.c **** 	// // UBRRH = 0;
- 141:e:\PROG_AVR\M328P\src\main.c **** 	// // UBRRL = 26;	//UBRR = 16000000/(16 * 38400) - 1 = 26,04 //при U2X = 0
- 142:e:\PROG_AVR\M328P\src\main.c **** 	// // UCSRB = (1 << TXEN);	// вкл приемник(RXEN=1),вкл передатчик(TXEN=1),вкл прерывание по приему
- 143:e:\PROG_AVR\M328P\src\main.c **** 	// // // Для доступа к регистру UCSRC ОБЯЗАТЕЛЬНО выставить бит URSEL(кроме ATTiny2313, там его не
- 144:e:\PROG_AVR\M328P\src\main.c **** 	// // UCSRC = (1 << URSEL)|(3 << UCSZ0);	// асинхронный режим(UMSEL=0), 8 бит(UCSZ2-0=011), 1 стоп
- 145:e:\PROG_AVR\M328P\src\main.c **** 
- 146:e:\PROG_AVR\M328P\src\main.c ****     // //1(16бит)таймер - основной тик ~1сек
- 147:e:\PROG_AVR\M328P\src\main.c ****     // SFIOR |= (1 << PSR10 | 1 << PSR2);   // сброс прескалера таймеров 1 и 0
- 148:e:\PROG_AVR\M328P\src\main.c ****     // TIMSK |= (1 << OCIE1A);   // разрешить прерывание по совпадению А 1(16разр) счетчика
- 149:e:\PROG_AVR\M328P\src\main.c ****     
- 150:e:\PROG_AVR\M328P\src\main.c **** 	// TCNT1H = 0;			// сброс счетных регистров
- 151:e:\PROG_AVR\M328P\src\main.c **** 	// TCNT1L = 0;
- 152:e:\PROG_AVR\M328P\src\main.c **** 	// TCCR1A = 0;
- 153:e:\PROG_AVR\M328P\src\main.c **** 	// TCCR1B = (1 << CS12);// Делитель на 256  1/16000000 = 62,5нс * 256 = 16мкс
- 154:e:\PROG_AVR\M328P\src\main.c **** 	// //0xF424 это 62500 * 0,000016 = 1,0 сек
- 155:e:\PROG_AVR\M328P\src\main.c **** 	// OCR1AH = ((0xF424 & 0xFF00) >> 8);
- 156:e:\PROG_AVR\M328P\src\main.c **** 	// OCR1AL = (0xF424 & 0x00FF);
- 157:e:\PROG_AVR\M328P\src\main.c **** 	
- 158:e:\PROG_AVR\M328P\src\main.c **** 	// //2(8бит)таймер - блокировка клавиатуры (снятие)
- 159:e:\PROG_AVR\M328P\src\main.c **** 	// TIMSK |= (1 << TOIE2);   // разрешить прерывание по переполнению 2(8разр) счетчика
- 160:e:\PROG_AVR\M328P\src\main.c **** 	// // запускать будем потом
- 161:e:\PROG_AVR\M328P\src\main.c **** 	// // TCNT2 = 0;
- 162:e:\PROG_AVR\M328P\src\main.c **** 	// // TCCR2 |= (1 << CS20 | 1 << CS21 | 1 << CS22);   // (8М)0,125мкс*256*1024 = 32мс (переполнени
- 163:e:\PROG_AVR\M328P\src\main.c **** 	// // TCCR2 |= (1 << CS20 | 1 << CS21 | 1 << CS22);   // (16М)0,0625мкс*256*1024 = 16.4мс (перепол
- 164:e:\PROG_AVR\M328P\src\main.c **** 	
- 165:e:\PROG_AVR\M328P\src\main.c **** 	sei();
- 142               	3,2),96,16;;",128,0,0,0
- 146 0026 7894      	.global	init
- 148               	init:
- 166:e:\PROG_AVR\M328P\src\main.c **** }
- 149               	tabn	162,0,0,0
- 151               	.global	init
- 153               	init:
- 155               	.LM0:
- 156               	.LFBB1:
- 157               	/* prologue: function */
- 158               	/* frame size = 0 */
- 160               	.LM1:
- 161               		in r24,80-32
- 162               		ori r24,lo8(-128)
- 163               		out 80-32,r24
- 165               	.LM2:
- 166 002a 0E94 0000 		sbi 36-32,5
- 168 002e 00C0      	.LM3:
- 169               		cbi 37-32,5
- 171               	.LM4:
- 172               		in r24,40-32
- 173               		ori r24,lo8(48)
- 174               		out 40-32,r24
- 176               	.LM5:
- 177 0000 00        		in r24,39-32
- 178               		andi r24,lo8(-49)
- 179               		out 39-32,r24
- 181               	.LM6:
- 182               		ldi r24,lo8(-128)
- 183 0000 3F        		sts 184,r24
- 185               	.LM7:
- 186               		sts 185,__zero_reg__
- 188               	.LM8:
- 189               		ldi r24,lo8(69)
- 190               		sts 188,r24
- 192               	.LM9:
- 193               	/* #APP */
- 194               	 ;  165 "e:\PROG_AVR\M328P\src\main.c" 1
- 195               		sei
- 196               	 ;  0 "" 2
+  82:e:\PROG_AVR\M328P\src\main.c **** 	// pos += 16;
+  83:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_SendChar(0b10000000 + 0x10, LCD_CMD);
+  84:e:\PROG_AVR\M328P\src\main.c **** 	// for(char i=pos;i<(pos+16);i++){
+  85:e:\PROG_AVR\M328P\src\main.c **** 		// I2C_SendChar(i, LCD_DATA);
+  86:e:\PROG_AVR\M328P\src\main.c **** 	// }
+  87:e:\PROG_AVR\M328P\src\main.c **** 	
+  88:e:\PROG_AVR\M328P\src\main.c **** 	// pos += 16;
+  89:e:\PROG_AVR\M328P\src\main.c **** 	// for(char i=pos;i<(pos+16);i++){
+  90:e:\PROG_AVR\M328P\src\main.c **** 		// I2C_SendChar(i, LCD_DATA);
+  91:e:\PROG_AVR\M328P\src\main.c **** 	// }
+  92:e:\PROG_AVR\M328P\src\main.c **** 	// I2C_StopCondition(); //Отправим условие STOP
+  93:e:\PROG_AVR\M328P\src\main.c **** 	
+  94:e:\PROG_AVR\M328P\src\main.c **** 	
+  95:e:\PROG_AVR\M328P\src\main.c **** 	
+  96:e:\PROG_AVR\M328P\src\main.c **** 	
+  97:e:\PROG_AVR\M328P\src\main.c **** 	
+  98:e:\PROG_AVR\M328P\src\main.c ****     while(1){
+  99:e:\PROG_AVR\M328P\src\main.c **** 		// if(i2c_STATUS & i2c_Err_msk){
+ 100:e:\PROG_AVR\M328P\src\main.c **** 			SetBit(PORT_LED_L,B_LED_L);
+ 101:e:\PROG_AVR\M328P\src\main.c **** 			_delay_ms(500);
+ 102:e:\PROG_AVR\M328P\src\main.c **** 			ClrBit(PORT_LED_L,B_LED_L);
+ 103:e:\PROG_AVR\M328P\src\main.c **** 			_delay_ms(500);
+ 104:e:\PROG_AVR\M328P\src\main.c **** 		// }else ClrBit(PORT_LED_L,B_LED_L);
+ 105:e:\PROG_AVR\M328P\src\main.c **** 		// CheckButton();
+ 106:e:\PROG_AVR\M328P\src\main.c **** 		// if(BitIsSet(STATUS,ST_BTN)){
+ 107:e:\PROG_AVR\M328P\src\main.c **** 			// ExecuteButton();
+ 108:e:\PROG_AVR\M328P\src\main.c **** 			// ClrBit(STATUS,ST_BTN);
+ 109:e:\PROG_AVR\M328P\src\main.c **** 		// }
+ 110:e:\PROG_AVR\M328P\src\main.c **** 		// if(BitIsSet(STATUS,ST_BLC)){
+ 111:e:\PROG_AVR\M328P\src\main.c **** 			// ReadMAX6675();
+ 112:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(1);
+ 113:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(1);
+ 114:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(2);
+ 115:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(2);
+ 116:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(3);
+ 117:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(3);
+ 118:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_getTemp(4);
+ 119:e:\PROG_AVR\M328P\src\main.c **** 			// DS18B20_convertTemp(4);
+ 120:e:\PROG_AVR\M328P\src\main.c **** 			// if(BitIsClr(STATUS,ST_MENU)){
+ 121:e:\PROG_AVR\M328P\src\main.c **** 				// OutVarInfoToLCD();
+ 122:e:\PROG_AVR\M328P\src\main.c **** 				// Work();
+ 123:e:\PROG_AVR\M328P\src\main.c **** 			// }else{
+ 124:e:\PROG_AVR\M328P\src\main.c **** 				// CountMUL_MENU_WAIT--;
+ 125:e:\PROG_AVR\M328P\src\main.c **** 					// uint16_t nx;
+ 126:e:\PROG_AVR\M328P\src\main.c **** 					// SetFont(font_Tahoma10);
+ 127:e:\PROG_AVR\M328P\src\main.c **** 					// SetColor(VGA_YELLOW);
+ 128:e:\PROG_AVR\M328P\src\main.c **** 					// nx = DrawString("Выход из меню:  ", 70, 282);
+ 129:e:\PROG_AVR\M328P\src\main.c **** 					// nx = OutNumber(CountMUL_MENU_WAIT, nx, 282);
+ 130:e:\PROG_AVR\M328P\src\main.c **** 					// DrawString(" сек     ", nx, 282);
+ 131:e:\PROG_AVR\M328P\src\main.c **** 				// if(CountMUL_MENU_WAIT == 0){	//выходим из меню
+ 132:e:\PROG_AVR\M328P\src\main.c **** 					// ClrBit(STATUS,ST_MENU);
+ 133:e:\PROG_AVR\M328P\src\main.c **** 					// BOILER_STATUS = BOILER_STATUS_IDLE;
+ 134:e:\PROG_AVR\M328P\src\main.c **** 					// UpdateValuesFromEEPROM();
+ 135:e:\PROG_AVR\M328P\src\main.c **** 					// OutFullInfoToLCD();
+ 136:e:\PROG_AVR\M328P\src\main.c **** 					// OutVarInfoToLCD();
+ 137:e:\PROG_AVR\M328P\src\main.c **** 				// }
+ 138:e:\PROG_AVR\M328P\src\main.c **** 			// }
+ 139:e:\PROG_AVR\M328P\src\main.c **** 			// ClrBit(STATUS,ST_BLC);
+ 140:e:\PROG_AVR\M328P\src\main.c **** 		// }
+ 141:e:\PROG_AVR\M328P\src\main.c **** 	}
+ 142:e:\PROG_AVR\M328P\src\main.c **** 	
+ 143:e:\PROG_AVR\M328P\src\main.c **** 	
+ 144:e:\PROG_AVR\M328P\src\main.c **** 		// _delay_ms(10);
+ 145:e:\PROG_AVR\M328P\src\main.c **** 	return 0;
+ 146:e:\PROG_AVR\M328P\src\main.c **** }
+ 147:e:\PROG_AVR\M328P\src\main.c **** //===============================================================================
+ 148:e:\PROG_AVR\M328P\src\main.c **** void init(void){
+ 105               	,148,.LM0-.LFBB1
+ 106               	.LM0:
+ 107               	.LFBB1:
+ 108               	/* prologue: function */
+ 109               	/* frame size = 0 */
+ 149:e:\PROG_AVR\M328P\src\main.c **** 	SetBit(ACSR, ACD);//отключим аналоговый компаратор
+ 110               	bn	68,0,149,.LM1-.LFBB1
+ 111               	.LM1:
+ 112 0000 80B7      		in r24,80-32
+ 113 0002 8068      		ori r24,lo8(-128)
+ 114 0004 80BF      		out 80-32,r24
+ 150:e:\PROG_AVR\M328P\src\main.c **** 	
+ 151:e:\PROG_AVR\M328P\src\main.c **** 	// LED L на плате
+ 152:e:\PROG_AVR\M328P\src\main.c **** 	DDR_LED_L |= (1 << B_LED_L);
+ 115               	bn	68,0,152,.LM2-.LFBB1
+ 116               	.LM2:
+ 117 0006 259A      		sbi 36-32,5
+ 153:e:\PROG_AVR\M328P\src\main.c **** 	PORT_LED_L &= ~(1 << B_LED_L);
+ 118               	tabn	68,0,153,.LM3-.LFBB1
+ 119               	.LM3:
+ 120 0008 2D98      		cbi 37-32,5
+ 154:e:\PROG_AVR\M328P\src\main.c **** 	
+ 155:e:\PROG_AVR\M328P\src\main.c **** 	PORT_I2C |= ((1 << B_SCL)|(1<<B_SCA));		// Включим подтяжку на ноги, вдруг юзер на резисторы пожмо
+ 121               	tabn	68,0,155,.LM4-.LFBB1
+ 122               	.LM4:
+ 123 000a 88B1      		in r24,40-32
+ 124 000c 8063      		ori r24,lo8(48)
+ 125 000e 88B9      		out 40-32,r24
+ 156:e:\PROG_AVR\M328P\src\main.c **** 	DDR_I2C &= ~((1 << B_SCL)|(1<<B_SCA));
+ 126               	bn	68,0,156,.LM5-.LFBB1
+ 127               	.LM5:
+ 128 0010 87B1      		in r24,39-32
+ 129 0012 8F7C      		andi r24,lo8(-49)
+ 130 0014 87B9      		out 39-32,r24
+ 157:e:\PROG_AVR\M328P\src\main.c **** 
+ 158:e:\PROG_AVR\M328P\src\main.c **** 	TWBR = 0x80;         					// Настроим битрейт 58,8kHz
+ 131               	bn	68,0,158,.LM6-.LFBB1
+ 132               	.LM6:
+ 133 0016 80E8      		ldi r24,lo8(-128)
+ 134 0018 8093 B800 		sts 184,r24
+ 159:e:\PROG_AVR\M328P\src\main.c **** 	TWSR = 0x00;
+ 135               	abn	68,0,159,.LM7-.LFBB1
+ 136               	.LM7:
+ 137 001c 1092 B900 		sts 185,__zero_reg__
+ 160:e:\PROG_AVR\M328P\src\main.c **** 	// TWCR = 	(0 << TWSTA)| // Бит условия СТАРТ
+ 161:e:\PROG_AVR\M328P\src\main.c **** 			// (0 << TWSTO)| // Бит условия СТОП
+ 162:e:\PROG_AVR\M328P\src\main.c **** 			// (0 << TWINT)| // Флаг прерывания TWI: 1 = сбрасываем флаг
+ 163:e:\PROG_AVR\M328P\src\main.c **** 			// (1 << TWEA)|  // Бит разрешения подтверждения: 0 = временно отключамся от шины
+ 164:e:\PROG_AVR\M328P\src\main.c **** 			// (1 << TWEN)|  // Бит разрешения работы TWI
+ 165:e:\PROG_AVR\M328P\src\main.c **** 			// (1 << TWIE);  // Разрешение прерывания TWI
+ 166:e:\PROG_AVR\M328P\src\main.c **** 
+ 167:e:\PROG_AVR\M328P\src\main.c **** 	// TWCR = (1 << TWINT)|(1 << TWSTA)|(1 << TWEN);
+ 168:e:\PROG_AVR\M328P\src\main.c **** 	// while(!(TWCR&(1<<TWINT)));		//подождем пока установится TWIN
+ 169:e:\PROG_AVR\M328P\src\main.c **** 
+ 170:e:\PROG_AVR\M328P\src\main.c **** 
+ 171:e:\PROG_AVR\M328P\src\main.c **** 	// // м/с управления шаговым двигателем заслонки(FLAP) TLE4729G
+ 172:e:\PROG_AVR\M328P\src\main.c **** 	
+ 173:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_FH |= (1 << B_FLAP_FH);
+ 174:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_FH &= ~(1 << B_FLAP_FH);
+ 175:e:\PROG_AVR\M328P\src\main.c **** 
+ 176:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_FVR |= (1 << B_FLAP_FVR);
+ 177:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_FVR &= ~(1 << B_FLAP_FVR);
+ 178:e:\PROG_AVR\M328P\src\main.c **** 
+ 179:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_FLAP_REV |= (1 << B_FLAP_REV);
+ 180:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_FLAP_REV &= ~(1 << B_FLAP_REV);
+ 181:e:\PROG_AVR\M328P\src\main.c **** 
+ 182:e:\PROG_AVR\M328P\src\main.c **** 	// // Датчики DS18B20
+ 183:e:\PROG_AVR\M328P\src\main.c **** 	// //Out	Уличный
+ 184:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_OUT &= ~(1 << B_DS_OUT);
+ 185:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_OUT &= ~(1 << B_DS_OUT);
+ 186:e:\PROG_AVR\M328P\src\main.c **** 
+ 187:e:\PROG_AVR\M328P\src\main.c **** 	// //Room	Комната
+ 188:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_ROOM &= ~(1 << B_DS_ROOM);
+ 189:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_ROOM &= ~(1 << B_DS_ROOM);
+ 190:e:\PROG_AVR\M328P\src\main.c **** 
+ 191:e:\PROG_AVR\M328P\src\main.c **** 	// //Serve (температура подачи)
+ 192:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_SRV &= ~(1 << B_DS_SRV);
+ 193:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_SRV &= ~(1 << B_DS_SRV);
+ 194:e:\PROG_AVR\M328P\src\main.c **** 
+ 195:e:\PROG_AVR\M328P\src\main.c **** 	// //Return (температура обратки)
+ 196:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_DS_RTN &= ~(1 << B_DS_RTN);
+ 197:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_DS_RTN &= ~(1 << B_DS_RTN);
+ 198:e:\PROG_AVR\M328P\src\main.c **** 
+ 199:e:\PROG_AVR\M328P\src\main.c **** 	// // Датчик дымовых газов - термопара мс MAX6675
+ 200:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_SO &= ~(1 << B_TC_SO);
+ 201:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_SO &= ~(1 << B_TC_SO);
+ 202:e:\PROG_AVR\M328P\src\main.c **** 
+ 203:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_CS |= (1 << B_TC_CS);
+ 204:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_CS |= (1 << B_TC_CS);
+ 205:e:\PROG_AVR\M328P\src\main.c **** 
+ 206:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_TC_SCK |= (1 << B_TC_SCK);
+ 207:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_TC_SCK &= ~(1 << B_TC_SCK);
+ 208:e:\PROG_AVR\M328P\src\main.c **** 
+ 209:e:\PROG_AVR\M328P\src\main.c **** 	// //Beep Зуммер активный
+ 210:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_BEEP |= (1 << B_BEEP);
+ 211:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_BEEP &= ~(1 << B_BEEP);
+ 212:e:\PROG_AVR\M328P\src\main.c **** 	
+ 213:e:\PROG_AVR\M328P\src\main.c **** 	// //Preheating реле включения ТЭНов подогрева
+ 214:e:\PROG_AVR\M328P\src\main.c **** 	// DDR_PHEAT |= (1 << B_PHEAT);
+ 215:e:\PROG_AVR\M328P\src\main.c **** 	// PORT_PHEAT &= ~(1 << B_PHEAT);
+ 216:e:\PROG_AVR\M328P\src\main.c **** 	
+ 217:e:\PROG_AVR\M328P\src\main.c **** 	// // // Настройка UART на 38400 bps(бод)
+ 218:e:\PROG_AVR\M328P\src\main.c **** 	// // UBRRH = 0;
+ 219:e:\PROG_AVR\M328P\src\main.c **** 	// // UBRRL = 26;	//UBRR = 16000000/(16 * 38400) - 1 = 26,04 //при U2X = 0
+ 220:e:\PROG_AVR\M328P\src\main.c **** 	// // UCSRB = (1 << TXEN);	// вкл приемник(RXEN=1),вкл передатчик(TXEN=1),вкл прерывание по приему
+ 221:e:\PROG_AVR\M328P\src\main.c **** 	// // // Для доступа к регистру UCSRC ОБЯЗАТЕЛЬНО выставить бит URSEL(кроме ATTiny2313, там его не
+ 222:e:\PROG_AVR\M328P\src\main.c **** 	// // UCSRC = (1 << URSEL)|(3 << UCSZ0);	// асинхронный режим(UMSEL=0), 8 бит(UCSZ2-0=011), 1 стоп
+ 223:e:\PROG_AVR\M328P\src\main.c **** 
+ 224:e:\PROG_AVR\M328P\src\main.c ****     // //1(16бит)таймер - основной тик ~1сек
+ 225:e:\PROG_AVR\M328P\src\main.c ****     // SFIOR |= (1 << PSR10 | 1 << PSR2);   // сброс прескалера таймеров 1 и 0
+ 226:e:\PROG_AVR\M328P\src\main.c ****     // TIMSK |= (1 << OCIE1A);   // разрешить прерывание по совпадению А 1(16разр) счетчика
+ 227:e:\PROG_AVR\M328P\src\main.c ****     
+ 228:e:\PROG_AVR\M328P\src\main.c **** 	// TCNT1H = 0;			// сброс счетных регистров
+ 229:e:\PROG_AVR\M328P\src\main.c **** 	// TCNT1L = 0;
+ 230:e:\PROG_AVR\M328P\src\main.c **** 	// TCCR1A = 0;
+ 231:e:\PROG_AVR\M328P\src\main.c **** 	// TCCR1B = (1 << CS12);// Делитель на 256  1/16000000 = 62,5нс * 256 = 16мкс
+ 232:e:\PROG_AVR\M328P\src\main.c **** 	// //0xF424 это 62500 * 0,000016 = 1,0 сек
+ 233:e:\PROG_AVR\M328P\src\main.c **** 	// OCR1AH = ((0xF424 & 0xFF00) >> 8);
+ 234:e:\PROG_AVR\M328P\src\main.c **** 	// OCR1AL = (0xF424 & 0x00FF);
+ 235:e:\PROG_AVR\M328P\src\main.c **** 	
+ 236:e:\PROG_AVR\M328P\src\main.c **** 	// //2(8бит)таймер - блокировка клавиатуры (снятие)
+ 237:e:\PROG_AVR\M328P\src\main.c **** 	// TIMSK |= (1 << TOIE2);   // разрешить прерывание по переполнению 2(8разр) счетчика
+ 238:e:\PROG_AVR\M328P\src\main.c **** 	// // запускать будем потом
+ 239:e:\PROG_AVR\M328P\src\main.c **** 	// // TCNT2 = 0;
+ 240:e:\PROG_AVR\M328P\src\main.c **** 	// // TCCR2 |= (1 << CS20 | 1 << CS21 | 1 << CS22);   // (8М)0,125мкс*256*1024 = 32мс (переполнени
+ 241:e:\PROG_AVR\M328P\src\main.c **** 	// // TCCR2 |= (1 << CS20 | 1 << CS21 | 1 << CS22);   // (16М)0,0625мкс*256*1024 = 16.4мс (перепол
+ 242:e:\PROG_AVR\M328P\src\main.c **** 	
+ 243:e:\PROG_AVR\M328P\src\main.c **** 	sei();
+ 138               	tabn	68,0,243,.LM8-.LFBB1
+ 139               	.LM8:
+ 140               	/* #APP */
+ 141               	 ;  243 "e:\PROG_AVR\M328P\src\main.c" 1
+ 142 0020 7894      		sei
+ 143               	 ;  0 "" 2
+ 144               	/* epilogue start */
+ 244:e:\PROG_AVR\M328P\src\main.c **** }
+ 145               		68,0,244,.LM9-.LFBB1
+ 146               	.LM9:
+ 147               	/* #NOAPP */
+ 148 0022 0895      		ret
+ 150               	.Lscope1:
+ 152               	.global	I2C_StartCondition
+ 154               	I2C_StartCondition:
+ 245:e:\PROG_AVR\M328P\src\main.c **** void InitLCD(void){
+ 246:e:\PROG_AVR\M328P\src\main.c **** 	I2C_StartCondition(); //Отправим условие START
+ 247:e:\PROG_AVR\M328P\src\main.c **** 	
+ 248:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+ 249:e:\PROG_AVR\M328P\src\main.c **** 	LCD_send_poluChar(0b00110000, LCD_CMD);
+ 250:e:\PROG_AVR\M328P\src\main.c **** 	_delay_ms(5);
+ 251:e:\PROG_AVR\M328P\src\main.c **** 	LCD_send_poluChar(0b00100000, LCD_CMD);
+ 252:e:\PROG_AVR\M328P\src\main.c **** 	
+ 253:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendChar(0b00101000, LCD_CMD);	// 4-бит, 2 строки(N=1), шрифт 5х8(F=0)
+ 254:e:\PROG_AVR\M328P\src\main.c **** 	_delay_ms(5);
+ 255:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendChar(0b00001000, LCD_CMD);	// выкл.дисплей, выкл.курсор (C=0), курсор не мигает(B=0)
+ 256:e:\PROG_AVR\M328P\src\main.c **** 	_delay_ms(5);
+ 257:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendChar(0b00000001, LCD_CMD);	// команда очистки дисплея
+ 258:e:\PROG_AVR\M328P\src\main.c **** 	_delay_ms(5);
+ 259:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendChar(0b00000110, LCD_CMD);	//вывод символов слева-направо(I/D=1), запрет сдвига экрана при
+ 260:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendChar(0b00001100, LCD_CMD);	//вкл.дисплей, выкл.курсор (C=0), курсор не мигает(B=0)
+ 261:e:\PROG_AVR\M328P\src\main.c **** 	I2C_StopCondition(); //Отправим условие STOP
+ 262:e:\PROG_AVR\M328P\src\main.c **** }
+ 263:e:\PROG_AVR\M328P\src\main.c **** void I2C_StartCondition(void){
+ 155               	,0,263,.LM10-.LFBB2
+ 156               	.LM10:
+ 157               	.LFBB2:
+ 158               	/* prologue: function */
+ 159               	/* frame size = 0 */
+ 264:e:\PROG_AVR\M328P\src\main.c **** 	TWCR = (1 << TWINT)|(1 << TWSTA)|(1 << TWEN);
+ 160               	bn	68,0,264,.LM11-.LFBB2
+ 161               	.LM11:
+ 162 0024 84EA      		ldi r24,lo8(-92)
+ 163 0026 8093 BC00 		sts 188,r24
+ 164               	.L4:
+ 265:e:\PROG_AVR\M328P\src\main.c **** 	while(!(TWCR & (1 << TWINT)));//подождем пока установится TWINT
+ 165               	bn	68,0,265,.LM12-.LFBB2
+ 166               	.LM12:
+ 167 002a 8091 BC00 		lds r24,188
+ 168 002e 87FF      		sbrs r24,7
+ 169 0030 00C0      		rjmp .L4
+ 170               	/* epilogue start */
+ 266:e:\PROG_AVR\M328P\src\main.c **** }
+ 171               	n	68,0,266,.LM13-.LFBB2
+ 172               	.LM13:
+ 173 0032 0895      		ret
+ 175               	.Lscope2:
+ 177               	.global	I2C_StopCondition
+ 179               	I2C_StopCondition:
+ 267:e:\PROG_AVR\M328P\src\main.c **** void I2C_StopCondition(void){
+ 180               	8,0,267,.LM14-.LFBB3
+ 181               	.LM14:
+ 182               	.LFBB3:
+ 183               	/* prologue: function */
+ 184               	/* frame size = 0 */
+ 268:e:\PROG_AVR\M328P\src\main.c **** 	TWCR = (1 << TWINT)|(1 << TWSTO)|(1 << TWEN);
+ 185               	bn	68,0,268,.LM15-.LFBB3
+ 186               	.LM15:
+ 187 0034 84E9      		ldi r24,lo8(-108)
+ 188 0036 8093 BC00 		sts 188,r24
+ 189               	/* epilogue start */
+ 269:e:\PROG_AVR\M328P\src\main.c **** }
+ 190               	bn	68,0,269,.LM16-.LFBB3
+ 191               	.LM16:
+ 192 003a 0895      		ret
+ 194               	.Lscope3:
+ 197               	.global	I2C_SendAddress
+ 199               	I2C_SendAddress:
+ 270:e:\PROG_AVR\M328P\src\main.c **** void I2C_SendAddress(char addr){
+ 200               	,0,270,.LM17-.LFBB4
+ 201               	.LM17:
+ 202               	.LFBB4:
+ 203               	/* prologue: function */
+ 204               	/* frame size = 0 */
+ 271:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendByte(addr << 1); //передаем адрес и бит записи (0)
+ 205               	bn	68,0,271,.LM18-.LFBB4
+ 206               	.LM18:
+ 207 003c 880F      		lsl r24
+ 208               	.LBB104:
+ 209               	.LBB105:
+ 272:e:\PROG_AVR\M328P\src\main.c **** }
+ 273:e:\PROG_AVR\M328P\src\main.c **** void I2C_SendByte(char ch){	// Отправка байта в шину как есть
+ 274:e:\PROG_AVR\M328P\src\main.c **** 	TWDR = ch;							// запишем байт в регистр данных
+ 210               	bn	68,0,274,.LM19-.LFBB4
+ 211               	.LM19:
+ 212 003e 8093 BB00 		sts 187,r24
+ 275:e:\PROG_AVR\M328P\src\main.c **** 	TWCR = (1 << TWINT)|(1 << TWEN);	// включим передачу байта
+ 213               	tabn	68,0,275,.LM20-.LFBB4
+ 214               	.LM20:
+ 215 0042 84E8      		ldi r24,lo8(-124)
+ 216 0044 8093 BC00 		sts 188,r24
+ 217               	.L10:
+ 276:e:\PROG_AVR\M328P\src\main.c **** 	while (!(TWCR & (1 << TWINT)));		// подождем пока установится TWINT
+ 218               	bn	68,0,276,.LM21-.LFBB4
+ 219               	.LM21:
+ 220 0048 8091 BC00 		lds r24,188
+ 221 004c 87FF      		sbrs r24,7
+ 222 004e 00C0      		rjmp .L10
+ 223               	/* epilogue start */
+ 224               	.LBE105:
+ 225               	.LBE104:
+ 227               	.LM22:
+ 228 0050 0895      		ret
+ 230               	.Lscope4:
+ 233               	.global	I2C_SendByte
+ 235               	I2C_SendByte:
+ 237               	.LM23:
+ 238               	.LFBB5:
+ 239               	/* prologue: function */
+ 240               	/* frame size = 0 */
+ 242               	.LM24:
+ 243 0052 8093 BB00 		sts 187,r24
+ 245               	.LM25:
+ 246 0056 84E8      		ldi r24,lo8(-124)
+ 247 0058 8093 BC00 		sts 188,r24
+ 248               	.L14:
+ 250               	.LM26:
+ 251 005c 8091 BC00 		lds r24,188
+ 252 0060 87FF      		sbrs r24,7
+ 253 0062 00C0      		rjmp .L14
+ 254               	/* epilogue start */
+ 277:e:\PROG_AVR\M328P\src\main.c **** }
+ 255               		ret
+ 257 0064 0895      	.Lscope5:
+ 261               	.global	I2C_SendChar
+ 263               	I2C_SendChar:
+ 265               	.LM28:
+ 278:e:\PROG_AVR\M328P\src\main.c **** void I2C_SendChar(char ch, uint8_t cmd){	// Отправка байта с разбивкой на полубайты со стробировани
+ 266               	prologue: function */
+ 267               	/* frame size = 0 */
+ 268               		mov r18,r24
+ 270               	.LM29:
+ 271 0066 282F      		lds r25,LCD_Light
+ 279:e:\PROG_AVR\M328P\src\main.c **** // ch - посылаемый байт, cmd: 0 - команда, 1 - данные 
+ 280:e:\PROG_AVR\M328P\src\main.c **** 	char t;
+ 281:e:\PROG_AVR\M328P\src\main.c **** 	t = (ch & 0xF0) | (LCD_Light << 3) | cmd;
+ 272               	r24,lo8(-16)
+ 273               		or r24,r22
+ 274 0068 9091 0000 		lsl r25
+ 275 006c 807F      		lsl r25
+ 276 006e 862B      		lsl r25
+ 277 0070 990F      		or r25,r24
+ 279 0074 990F      	.LM30:
+ 280 0076 982B      		mov r24,r25
+ 282:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendByte(t | (1 << 2));
+ 281               	lo8(4)
+ 282               	.LBB106:
+ 283 0078 892F      	.LBB107:
+ 285               	.LM31:
+ 286               		sts 187,r24
+ 288               	.LM32:
+ 289 007c 8093 BB00 		ldi r24,lo8(-124)
+ 290               		sts 188,r24
+ 291               	.L18:
+ 293 0082 8093 BC00 	.LM33:
+ 294               		lds r24,188
+ 295               		sbrs r24,7
+ 296               		rjmp .L18
+ 297 0086 8091 BC00 	.LBE107:
+ 298 008a 87FF      	.LBE106:
+ 299 008c 00C0      	.LBB108:
+ 300               	.LBB109:
+ 302               	.LM34:
+ 303               		sts 187,r25
+ 305               	.LM35:
+ 306 008e 9093 BB00 		ldi r24,lo8(-124)
+ 307               		sts 188,r24
+ 308               	.L19:
+ 310 0094 8093 BC00 	.LM36:
+ 311               		lds r24,188
+ 312               		sbrs r24,7
+ 313               		rjmp .L19
+ 314 0098 8091 BC00 	.LBE109:
+ 315 009c 87FF      	.LBE108:
+ 317               	.LM37:
+ 318               		lds r24,LCD_Light
+ 283:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendByte(t);
+ 284:e:\PROG_AVR\M328P\src\main.c **** 	t = ((ch & 0x0F) << 4) | (LCD_Light << 3) | cmd;
+ 319               	
+ 320               		mov r25,r18
+ 321 00a0 8091 0000 		swap r25
+ 322 00a4 880F      		andi r25,lo8(-16)
+ 323 00a6 880F      		or r25,r24
+ 325 00aa 862B      	.LM38:
+ 326 00ac 922F      		mov r24,r25
+ 327 00ae 9295      		ori r24,lo8(4)
+ 328 00b0 907F      	.LBB110:
+ 329 00b2 982B      	.LBB111:
+ 285:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendByte(t | (1 << 2));
+ 330               	,0,274,.LM39-.LFBB6
+ 331               	.LM39:
+ 332 00b4 892F      		sts 187,r24
+ 334               	.LM40:
+ 335               		ldi r24,lo8(-124)
+ 336               		sts 188,r24
+ 337               	.L20:
+ 339               	.LM41:
+ 340               		lds r24,188
+ 341 00bc 84E8      		sbrs r24,7
+ 342 00be 8093 BC00 		rjmp .L20
+ 343               	.LBE111:
+ 344               	.LBE110:
+ 345               	.LBB112:
+ 346 00c2 8091 BC00 	.LBB113:
+ 348 00c8 00C0      	.LM42:
+ 349               		sts 187,r25
+ 351               	.LM43:
+ 352               		ldi r24,lo8(-124)
+ 353               		sts 188,r24
+ 354               	.L21:
+ 356               	.LM44:
+ 357               		lds r24,188
+ 358 00ce 84E8      		sbrs r24,7
+ 359 00d0 8093 BC00 		rjmp .L21
+ 360               	/* epilogue start */
+ 361               	.LBE113:
+ 362               	.LBE112:
+ 364 00d8 87FF      	.LM45:
+ 365 00da 00C0      		ret
+ 286:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendByte(t);
+ 287:e:\PROG_AVR\M328P\src\main.c **** }
+ 369               	6:
+ 373               	.global	LCD_send_poluChar
+ 375               	LCD_send_poluChar:
+ 377               	.LM46:
+ 378               	.LFBB7:
+ 379               	/* prologue: function */
+ 380               	/* frame size = 0 */
+ 382               	.LM47:
+ 288:e:\PROG_AVR\M328P\src\main.c **** void LCD_send_poluChar(uint8_t pch, uint8_t cmd){
+ 383               	ight
+ 384               		andi r24,lo8(-16)
+ 385               		or r24,r22
+ 386               		lsl r25
+ 387               		lsl r25
+ 289:e:\PROG_AVR\M328P\src\main.c **** // ch - посылаемые 4 старшие бита байта, cmd: 0 - команда, 1 - данные 
+ 290:e:\PROG_AVR\M328P\src\main.c **** 	char t;
+ 291:e:\PROG_AVR\M328P\src\main.c **** 	t = (pch & 0xF0) | (LCD_Light << 3) | cmd;
+ 388               	r25
+ 389               		or r25,r24
+ 391 00e2 807F      	.LM48:
+ 392 00e4 862B      		mov r24,r25
+ 393 00e6 990F      		ori r24,lo8(4)
+ 394 00e8 990F      	.LBB114:
+ 395 00ea 990F      	.LBB115:
+ 292:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendByte(t | (1 << 2));
+ 397               	ts 187,r24
+ 399 00ee 892F      	.LM50:
+ 400 00f0 8460      		ldi r24,lo8(-124)
+ 401               		sts 188,r24
+ 402               	.L28:
+ 404               	.LM51:
+ 405 00f2 8093 BB00 		lds r24,188
+ 406               		sbrs r24,7
+ 407               		rjmp .L28
+ 408 00f6 84E8      	.LBE115:
+ 409 00f8 8093 BC00 	.LBE114:
+ 410               	.LBB116:
+ 411               	.LBB117:
+ 413 00fc 8091 BC00 	.LM52:
+ 414 0100 87FF      		sts 187,r25
+ 416               	.LM53:
+ 417               		ldi r24,lo8(-124)
+ 418               		sts 188,r24
+ 419               	.L29:
+ 421               	.LM54:
+ 422 0104 9093 BB00 		lds r24,188
+ 423               		sbrs r24,7
+ 424               		rjmp .L29
+ 425 0108 84E8      	/* epilogue start */
+ 426 010a 8093 BC00 	.LBE117:
+ 427               	.LBE116:
+ 429               	.LM55:
+ 430 010e 8091 BC00 		ret
+ 435               	.Lscope7:
+ 293:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendByte(t);
+ 294:e:\PROG_AVR\M328P\src\main.c **** }
+ 436               	D
+ 437               	.global	InitLCD
+ 439               	InitLCD:
+ 441               	.LM56:
+ 442               	.LFBB8:
+ 443               		push r16
+ 444               		push r17
+ 445               	/* prologue: function */
+ 446               	/* frame size = 0 */
+ 447               	.LBB118:
+ 448               	.LBB119:
+ 450               	.LM57:
+ 451 0118 0F93      		ldi r24,lo8(-92)
+ 452 011a 1F93      		sts 188,r24
+ 453               	.L34:
+ 455               	.LM58:
+ 456               		lds r24,188
+ 457               		sbrs r24,7
+ 458               		rjmp .L34
+ 459 011c 84EA      	.LBE119:
+ 460 011e 8093 BC00 	.LBE118:
+ 461               	.LBB120:
+ 462               	.LBB121:
+ 463               	.LBB122:
+ 464 0122 8091 BC00 	.LBB123:
+ 466 0128 00C0      	.LM59:
+ 467               		ldi r24,lo8(78)
+ 468               		sts 187,r24
+ 470               	.LM60:
+ 471               		ldi r24,lo8(-124)
+ 472               		sts 188,r24
+ 473               	.L35:
+ 475 012a 8EE4      	.LM61:
+ 476 012c 8093 BB00 		lds r24,188
+ 477               		sbrs r24,7
+ 478               		rjmp .L35
+ 479 0130 84E8      	.LBE123:
+ 480 0132 8093 BC00 	.LBE122:
+ 481               	.LBE121:
+ 482               	.LBE120:
+ 484 0136 8091 BC00 	.LM62:
+ 485 013a 87FF      		ldi r24,lo8(48)
+ 486 013c 00C0      		ldi r22,lo8(0)
+ 487               		call LCD_send_poluChar
+ 488               	.LBB124:
+ 489               	.LBB125:
+ 490               	.LBB126:
+ 491               	.LBB127:
+ 493 013e 80E3      	.Ltext1:
+ 495 0142 0E94 0000 	.LM63:
+ 496               		ldi r16,lo8(20000)
+ 497               		ldi r17,hi8(20000)
+ 498               		movw r24,r16
+ 499               	/* #APP */
+ 500               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 501               		1: sbiw r24,1
+   1:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    Copyright (c) 2007 Joerg Wunsch
+   3:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    All rights reserved.
+   4:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+   5:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    Redistribution and use in source and binary forms, with or without
+   6:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    modification, are permitted provided that the following conditions are met:
+   7:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+   8:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Redistributions of source code must retain the above copyright
+   9:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer.
+  10:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  11:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Redistributions in binary form must reproduce the above copyright
+  12:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer in
+  13:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      the documentation and/or other materials provided with the
+  14:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      distribution.
+  15:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  16:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****    * Neither the name of the copyright holders nor the names of
+  17:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      contributors may be used to endorse or promote products derived
+  18:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****      from this software without specific prior written permission.
+  19:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  20:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  31:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  32:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /* $Id: delay_basic.h,v 1.1 2007/05/13 21:23:20 joerg_wunsch Exp $ */
+  33:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  34:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #ifndef _UTIL_DELAY_BASIC_H_
+  35:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #define _UTIL_DELAY_BASIC_H_ 1
+  36:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  37:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #include <inttypes.h>
+  38:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  39:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \file */
+  40:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \defgroup util_delay_basic <util/delay_basic.h>: Basic busy-wait delay loops
+  41:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     \code
+  42:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     #include <util/delay_basic.h>
+  43:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     \endcode
+  44:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  45:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     The functions in this header file implement simple delay loops
+  46:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     that perform a busy-waiting.  They are typically used to
+  47:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     facilitate short delays in the program execution.  They are
+  48:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     implemented as count-down loops with a well-known CPU cycle
+  49:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     count per loop iteration.  As such, no other processing can
+  50:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     occur simultaneously.  It should be kept in mind that the
+  51:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     functions described here do not disable interrupts.
+  52:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  53:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     In general, for long delays, the use of hardware timers is
+  54:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     much preferrable, as they free the CPU, and allow for
+  55:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     concurrent processing of other events while the timer is
+  56:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     running.  However, in particular for very short delays, the
+  57:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     overhead of setting up a hardware timer is too much compared
+  58:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     to the overall delay time.
+  59:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  60:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Two inline functions are provided for the actual delay algorithms.
+  61:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  62:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** */
+  63:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  64:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #if !defined(__DOXYGEN__)
+  65:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** static inline void _delay_loop_1(uint8_t __count) __attribute__((always_inline));
+  66:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** static inline void _delay_loop_2(uint16_t __count) __attribute__((always_inline));
+  67:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** #endif
+  68:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  69:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  70:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  71:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Delay loop using an 8-bit counter \c __count, so up to 256
+  72:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     iterations are possible.  (The value 256 would have to be passed
+  73:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     as 0.)  The loop executes three CPU cycles per iteration, not
+  74:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     including the overhead the compiler needs to setup the counter
+  75:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     register.
+  76:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  77:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to 768 microseconds
+  78:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     can be achieved.
+  79:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** */
+  80:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** void
+  81:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** _delay_loop_1(uint8_t __count)
+  82:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** {
+  83:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	__asm__ volatile (
+  84:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		"1: dec %0" "\n\t"
+  85:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		"brne 1b"
+  86:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		: "=r" (__count)
+  87:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 		: "0" (__count)
+  88:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	);
+  89:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** }
+  90:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  91:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  92:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  93:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Delay loop using a 16-bit counter \c __count, so up to 65536
+  94:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     iterations are possible.  (The value 65536 would have to be
+  95:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     passed as 0.)  The loop executes four CPU cycles per iteration,
+  96:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     not including the overhead the compiler requires to setup the
+  97:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     counter register pair.
+  98:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 
+  99:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to about 262.1
+ 100:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****     milliseconds can be achieved.
+ 101:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h ****  */
+ 102:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** void
+ 103:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** _delay_loop_2(uint16_t __count)
+ 104:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** {
+ 105:e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h **** 	__asm__ volatile (
+ 502               	4:
+ 504 0146 00E2      	.Ltext2:
+ 506 014a C801      	.LM64:
+ 507               		ldi r24,lo8(32)
+ 508               		ldi r22,lo8(0)
+ 509 014c 0197      		call LCD_send_poluChar
+ 511               	.LM65:
+ 512               		ldi r24,lo8(40)
+ 513               		ldi r22,lo8(0)
+ 514               		call I2C_SendChar
+ 515               	.LBB128:
+ 516               	.LBB129:
+ 517               	.LBB130:
+ 518               	.LBB131:
+ 520               	.Ltext3:
+ 522 0152 60E0      	.LM66:
+ 523 0154 0E94 0000 		movw r24,r16
+ 524               	/* #APP */
+ 525               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 526 0158 88E2      		1: sbiw r24,1
+ 527 015a 60E0      		brne 1b
+ 528 015c 0E94 0000 	 ;  0 "" 2
+ 529               	/* #NOAPP */
+ 530               	.LBE131:
+ 531               	.LBE130:
+ 532               	.LBE129:
+ 533               	.LBE128:
+ 535               	.Ltext4:
+ 537 0160 C801      	.LM67:
+ 538               		ldi r24,lo8(8)
+ 539               		ldi r22,lo8(0)
+ 540 0162 0197      		call I2C_SendChar
+ 541 0164 01F4      	.LBB132:
+ 542               	.LBB133:
+ 543               	.LBB134:
+ 544               	.LBB135:
+ 546               	.Ltext5:
+ 548               	.LM68:
+ 549               		movw r24,r16
+ 550               	/* #APP */
+ 551               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 552 0166 88E0      		1: sbiw r24,1
+ 553 0168 60E0      		brne 1b
+ 554 016a 0E94 0000 	 ;  0 "" 2
+ 555               	/* #NOAPP */
+ 556               	.LBE135:
+ 557               	.LBE134:
+ 558               	.LBE133:
+ 559               	.LBE132:
+ 561               	.Ltext6:
+ 563 016e C801      	.LM69:
+ 564               		ldi r24,lo8(1)
+ 565               		ldi r22,lo8(0)
+ 566 0170 0197      		call I2C_SendChar
+ 567 0172 01F4      	.LBB136:
+ 568               	.LBB137:
+ 569               	.LBB138:
+ 570               	.LBB139:
+ 572               	.Ltext7:
+ 574               	.LM70:
+ 575               		movw r24,r16
+ 576               	/* #APP */
+ 577               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 578 0174 81E0      		1: sbiw r24,1
+ 579 0176 60E0      		brne 1b
+ 580 0178 0E94 0000 	 ;  0 "" 2
+ 581               	/* #NOAPP */
+ 582               	.LBE139:
+ 583               	.LBE138:
+ 584               	.LBE137:
+ 585               	.LBE136:
+ 587               	.Ltext8:
+ 589 017c C801      	.LM71:
+ 590               		ldi r24,lo8(6)
+ 591               		ldi r22,lo8(0)
+ 592 017e 0197      		call I2C_SendChar
+ 594               	.LM72:
+ 595               		ldi r24,lo8(12)
+ 596               		ldi r22,lo8(0)
+ 597               		call I2C_SendChar
+ 598               	.LBB140:
+ 599               	.LBB141:
+ 601               	.LM73:
+ 602               		ldi r24,lo8(-108)
+ 603               		sts 188,r24
+ 604 0182 86E0      	/* epilogue start */
+ 605 0184 60E0      	.LBE141:
+ 606 0186 0E94 0000 	.LBE140:
+ 608               	.LM74:
+ 609 018a 8CE0      		pop r17
+ 610 018c 60E0      		pop r16
+ 611 018e 0E94 0000 		ret
+ 613               	.Lscope8:
+ 618               	.global	LCD_write_string
+ 620               	LCD_write_string:
+ 622               	.LM75:
+ 623 0198 1F91      	.LFBB9:
+ 624 019a 0F91      		push r14
+ 625 019c 0895      		push r15
+ 626               		push r17
+ 627               		push r29
+ 628               		push r28
+ 629               		rcall .
+ 630               		rcall .
+ 631               		in r28,__SP_L__
+ 632               		in r29,__SP_H__
+ 633               	/* prologue: function */
+ 634               	/* frame size = 4 */
+ 295:e:\PROG_AVR\M328P\src\main.c **** void LCD_write_string(uint8_t row, uint8_t pos, char* str){
+ 635               	65,.LM77-.LFBB9
+ 636               	.LM77:
+ 637               		lds r24,188
+ 638 019e EF92      		sbrs r24,7
+ 639 01a0 FF92      		rjmp .L40
+ 640 01a2 1F93      	.LBE143:
+ 641 01a4 DF93      	.LBE142:
+ 642 01a6 CF93      	.LBB144:
+ 643 01a8 00D0      	.LBB145:
+ 644 01aa 00D0      	.LBB146:
+ 645 01ac CDB7      	.LBB147:
+ 647               	.LM78:
+ 648               		ldi r24,lo8(78)
+ 649 01b0 982F      		sts 187,r24
+ 651               	.LM79:
+ 652               		ldi r24,lo8(-124)
+ 653               		sts 188,r24
+ 654               	.L41:
+ 656 01b6 8093 BC00 	.LM80:
+ 657               		lds r24,188
+ 658               		sbrs r24,7
+ 659               		rjmp .L41
+ 660 01ba 8091 BC00 	.LBE147:
+ 661 01be 87FF      	.LBE146:
+ 662 01c0 00C0      	.LBE145:
+ 663               	.LBE144:
+ 665               	.LM81:
+ 666               		std Y+1,__zero_reg__
+ 667               		ldi r24,lo8(64)
+ 668               		std Y+2,r24
+ 669               		ldi r24,lo8(20)
+ 670               		std Y+3,r24
+ 671 01c2 8EE4      		ldi r24,lo8(84)
+ 672 01c4 8093 BB00 		std Y+4,r24
+ 674               	.LM82:
+ 675 01c8 84E8      		subi r22,lo8(-(-128))
+ 676 01ca 8093 BC00 		movw r30,r28
+ 677               		add r30,r25
+ 678               		adc r31,__zero_reg__
+ 679               		ldd r24,Z+1
+ 680 01ce 8091 BC00 		add r24,r22
+ 681 01d2 87FF      		ldi r22,lo8(0)
+ 682 01d4 00C0      		call I2C_SendChar
+ 683               		ldi r17,lo8(0)
+ 684               		rjmp .L42
+ 685               	.L43:
+ 296:e:\PROG_AVR\M328P\src\main.c **** 	uint8_t ib = 0;
+ 297:e:\PROG_AVR\M328P\src\main.c **** 	uint8_t code_row[4] = {0x00, 0x40, 0x14, 0x54};
+ 687               	,0,306,.LM84-.LFBB9
+ 688               	.LM84:
+ 689 01d6 1982      		subi r17,lo8(-(1))
+ 690 01d8 80E4      	.L42:
+ 692 01dc 84E1      	.LM85:
+ 693 01de 8B83      		movw r30,r14
+ 694 01e0 84E5      		add r30,r17
+ 695 01e2 8C83      		adc r31,__zero_reg__
+ 298:e:\PROG_AVR\M328P\src\main.c **** 	
+ 299:e:\PROG_AVR\M328P\src\main.c **** 	I2C_StartCondition(); //Отправим условие START
+ 300:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+ 301:e:\PROG_AVR\M328P\src\main.c **** 	
+ 302:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendChar((0b10000000 + code_row[row] + pos), LCD_CMD);  //установка указателя
+ 696               	
+ 697               		tst r24
+ 698 01e4 6058      		brne .L43
+ 699 01e6 FE01      	.LBB148:
+ 700 01e8 E90F      	.LBB149:
+ 702 01ec 8181      	.LM86:
+ 703 01ee 860F      		ldi r24,lo8(-108)
+ 704 01f0 60E0      		sts 188,r24
+ 705 01f2 0E94 0000 	/* epilogue start */
+ 706 01f6 10E0      	.LBE149:
+ 707 01f8 00C0      	.LBE148:
+ 303:e:\PROG_AVR\M328P\src\main.c **** 	while(str[ib] != 0){
+ 304:e:\PROG_AVR\M328P\src\main.c **** 		// I2C_SendChar(charTable[(uint8_t)str[ib]], LCD_DATA);
+ 305:e:\PROG_AVR\M328P\src\main.c **** 		I2C_SendChar(str[ib], LCD_DATA);
+ 709               	__tmp_reg__
+ 710               		pop __tmp_reg__
+ 711 01fa 61E0      		pop __tmp_reg__
+ 712 01fc 0E94 0000 		pop __tmp_reg__
+ 306:e:\PROG_AVR\M328P\src\main.c **** 		ib++;
+ 713               	 r28
+ 714               		pop r29
+ 715 0200 1F5F      		pop r17
+ 716               		pop r15
+ 717               		pop r14
+ 718               		ret
+ 724 020c 01F4      	.Lscope9:
+ 726               	.global	LCD_ClearDisplay
+ 728               	LCD_ClearDisplay:
+ 730 0210 8093 BC00 	.LM88:
+ 731               	.LFBB10:
+ 732               	/* prologue: function */
+ 733               	/* frame size = 0 */
+ 307:e:\PROG_AVR\M328P\src\main.c **** 	}
+ 308:e:\PROG_AVR\M328P\src\main.c **** 	I2C_StopCondition(); //Отправим условие STOP
+ 309:e:\PROG_AVR\M328P\src\main.c **** }
+ 734               	tabn	68,0,264,.LM89-.LFBB10
+ 735               	.LM89:
+ 736 0214 0F90      		ldi r24,lo8(-92)
+ 737 0216 0F90      		sts 188,r24
+ 738 0218 0F90      	.L48:
+ 740 021c CF91      	.LM90:
+ 741 021e DF91      		lds r24,188
+ 742 0220 1F91      		sbrs r24,7
+ 743 0222 FF90      		rjmp .L48
+ 744 0224 EF90      	.LBE151:
+ 745 0226 0895      	.LBE150:
+ 746               	.LBB152:
+ 747               	.LBB153:
+ 748               	.LBB154:
+ 749               	.LBB155:
+ 751               	.LM91:
+ 752               		ldi r24,lo8(78)
+ 753               		sts 187,r24
+ 755               	.LM92:
+ 310:e:\PROG_AVR\M328P\src\main.c **** void LCD_ClearDisplay(void){
+ 756               	s 188,r24
+ 757               	.L49:
+ 759               	.LM93:
+ 760               		lds r24,188
+ 761               		sbrs r24,7
+ 762               		rjmp .L49
+ 763               	.LBE155:
+ 764               	.LBE154:
+ 765 0228 84EA      	.LBE153:
+ 766 022a 8093 BC00 	.LBE152:
+ 768               	.LM94:
+ 769               		ldi r24,lo8(1)
+ 770 022e 8091 BC00 		ldi r22,lo8(0)
+ 771 0232 87FF      		call I2C_SendChar
+ 772 0234 00C0      	.LBB156:
+ 773               	.LBB157:
+ 774               	.LBB158:
+ 775               	.LBB159:
+ 777               	.Ltext9:
+ 779               	.LM95:
+ 780               		ldi r24,lo8(20000)
+ 781 0236 8EE4      		ldi r25,hi8(20000)
+ 782 0238 8093 BB00 	/* #APP */
+ 783               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 784               		1: sbiw r24,1
+ 785 023c 84E8      		brne 1b
+ 786 023e 8093 BC00 	 ;  0 "" 2
+ 787               	/* #NOAPP */
+ 788               	.LBE159:
+ 789               	.LBE158:
+ 790 0242 8091 BC00 	.LBE157:
+ 791 0246 87FF      	.LBE156:
+ 792 0248 00C0      	.LBB160:
+ 793               	.LBB161:
+ 795               	.Ltext10:
+ 311:e:\PROG_AVR\M328P\src\main.c **** 	I2C_StartCondition(); //Отправим условие START
+ 312:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendAddress(i2c_LCD_Address); //передаем адрес
+ 313:e:\PROG_AVR\M328P\src\main.c **** 	
+ 314:e:\PROG_AVR\M328P\src\main.c **** 	I2C_SendChar(0b00000001, LCD_CMD);
+ 797               	 epilogue start */
+ 798               	.LBE161:
+ 799 024a 81E0      	.LBE160:
+ 801 024e 0E94 0000 	.LM97:
+ 802               		ret
+ 804               	.Lscope10:
+ 805               		.data
+ 806               	.LC0:
+ 807               		.string	"Yaroslavskiy"
+ 808               	.LC1:
+ 809               		.string	"BEVERAGE FACTORY"
+ 810 0252 80E2      	.LC2:
+ 811 0254 9EE4      		.string	"Strobe v1.0"
+ 812               	.LC3:
+ 813               		.string	"01234567890123456789"
+ 814 0256 0197      		.text
+ 816               	.global	main
+ 818               	main:
+ 820               	.LM98:
+ 821               	.LFBB11:
+ 822               	/* prologue: function */
+ 823               	/* frame size = 0 */
+ 825               	.LM99:
+ 826               		call init
+ 828 025a 84E9      	.LM100:
+ 829 025c 8093 BC00 		call InitLCD
+ 830               		ldi r24,lo8(2000)
+ 831               		ldi r25,hi8(2000)
+ 832               	.LBB162:
+ 315:e:\PROG_AVR\M328P\src\main.c **** 	_delay_ms(5);
+ 316:e:\PROG_AVR\M328P\src\main.c **** 	
+ 317:e:\PROG_AVR\M328P\src\main.c **** 	I2C_StopCondition(); //Отправим условие STOP
+ 318:e:\PROG_AVR\M328P\src\main.c **** }
+ 833               	e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h",132,0,0,.Ltext11
+ 834               	.Ltext11:
+ 836               	.LM101:
+ 837               		ldi r18,lo8(400)
+ 838               		ldi r19,hi8(400)
+ 839               	.L54:
+ 840 0000 5961 726F 		movw r30,r18
+ 840      736C 6176 
+ 840      736B 6979 
+ 840      00
+ 841               	/* #APP */
+ 842 000d 4245 5645 	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 842      5241 4745 
+ 842      2046 4143 
+ 842      544F 5259 
+ 842      00
+ 843               		1: sbiw r30,1
+ 844 001e 5374 726F 		brne 1b
+ 844      6265 2076 
+ 844      312E 3000 
+ 845               	 ;  0 "" 2
+ 846 002a 3031 3233 	/* #NOAPP */
+ 846      3435 3637 
+ 846      3839 3031 
+ 846      3233 3435 
+ 846      3637 3839 
+ 847               	.LBE165:
+ 848               	.LBE164:
+ 850               	.Ltext12:
+ 852               	.LM102:
+ 853               		sbiw r24,1
+ 855               	.LM103:
+ 856               		brne .L54
+ 857               		ldi r24,lo8(500)
+ 858               		ldi r25,hi8(500)
+ 859 0262 0E94 0000 	.LBE163:
+ 860               	.LBE162:
+ 861               	.LBB166:
+ 862 0266 0E94 0000 	.LBB167:
+ 863 026a 80ED      	.LBB168:
+ 864 026c 97E0      	.LBB169:
+ 866               	.Ltext13:
+ 868               	.LM104:
+ 869               		ldi r18,lo8(400)
+ 870               		ldi r19,hi8(400)
+ 871               	.L55:
+ 872               		movw r30,r18
+ 873 026e 20E9      	/* #APP */
+ 874 0270 31E0      	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 875               		1: sbiw r30,1
+ 876 0272 F901      		brne 1b
+ 877               	 ;  0 "" 2
+ 878               	/* #NOAPP */
+ 879 0274 3197      	.LBE169:
+ 880 0276 01F4      	.LBE168:
+ 882               	.Ltext14:
+ 884               	.LM105:
+ 885               		sbiw r24,1
+   1:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    Copyright (c) 2004,2005,2007 Joerg Wunsch
+   3:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    Copyright (c) 2007  Florin-Viorel Petrov
+   4:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    All rights reserved.
+   5:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+   6:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    Redistribution and use in source and binary forms, with or without
+   7:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    modification, are permitted provided that the following conditions are met:
+   8:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+   9:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    * Redistributions of source code must retain the above copyright
+  10:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer.
+  11:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  12:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    * Redistributions in binary form must reproduce the above copyright
+  13:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer in
+  14:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****      the documentation and/or other materials provided with the
+  15:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****      distribution.
+  16:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  17:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    * Neither the name of the copyright holders nor the names of
+  18:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****      contributors may be used to endorse or promote products derived
+  19:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****      from this software without specific prior written permission.
+  20:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  21:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  22:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  23:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  24:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  25:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  26:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  27:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  28:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  29:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  30:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  31:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  32:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  33:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** /* $Id: delay.h,v 1.5.2.1 2009/02/25 10:14:03 joerg_wunsch Exp $ */
+  34:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  35:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #ifndef _UTIL_DELAY_H_
+  36:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #define _UTIL_DELAY_H_ 1
+  37:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  38:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #include <inttypes.h>
+  39:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #include <util/delay_basic.h>
+  40:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  41:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** /** \file */
+  42:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** /** \defgroup util_delay <util/delay.h>: Convenience functions for busy-wait delay loops
+  43:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     \code
+  44:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     #define F_CPU 1000000UL  // 1 MHz
+  45:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     //#define F_CPU 14.7456E6
+  46:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     #include <util/delay.h>
+  47:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     \endcode
+  48:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  49:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     \note As an alternative method, it is possible to pass the
+  50:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     F_CPU macro down to the compiler from the Makefile.
+  51:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     Obviously, in that case, no \c \#define statement should be
+  52:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     used.
+  53:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  54:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     The functions in this header file are wrappers around the basic
+  55:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     busy-wait functions from <util/delay_basic.h>.  They are meant as
+  56:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     convenience functions where actual time values can be specified
+  57:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     rather than a number of cycles to wait for.  The idea behind is
+  58:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     that compile-time constant expressions will be eliminated by
+  59:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     compiler optimization so floating-point expressions can be used
+  60:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     to calculate the number of delay cycles needed based on the CPU
+  61:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     frequency passed by the macro F_CPU.
+  62:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  63:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     \note In order for these functions to work as intended, compiler
+  64:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     optimizations <em>must</em> be enabled, and the delay time
+  65:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     <em>must</em> be an expression that is a known constant at
+  66:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     compile-time.  If these requirements are not met, the resulting
+  67:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     delay will be much longer (and basically unpredictable), and
+  68:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     applications that otherwise do not use floating-point calculations
+  69:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     will experience severe code bloat by the floating-point library
+  70:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     routines linked into the application.
+  71:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  72:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     The functions available allow the specification of microsecond, and
+  73:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     millisecond delays directly, using the application-supplied macro
+  74:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****     F_CPU as the CPU clock frequency (in Hertz).
+  75:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  76:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** */
+  77:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  78:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #if !defined(__DOXYGEN__)
+  79:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** static inline void _delay_us(double __us) __attribute__((always_inline));
+  80:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** static inline void _delay_ms(double __ms) __attribute__((always_inline));
+  81:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #endif
+  82:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  83:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #ifndef F_CPU
+  84:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** /* prevent compiler error by supplying a default */
+  85:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** # warning "F_CPU not defined for <util/delay.h>"
+  86:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** # define F_CPU 1000000UL
+  87:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #endif
+  88:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  89:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #ifndef __OPTIMIZE__
+  90:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+  91:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** #endif
+  92:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  93:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** /**
+  94:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    \ingroup util_delay
+  95:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  96:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    Perform a delay of \c __ms milliseconds, using _delay_loop_2().
+  97:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+  98:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    The macro F_CPU is supposed to be defined to a
+  99:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 100:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+ 101:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    The maximal possible delay is 262.14 ms / F_CPU in MHz.
+ 102:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 
+ 103:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    When the user request delay which exceed the maximum possible one,
+ 104:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    _delay_ms() provides a decreased resolution functionality. In this
+ 105:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    mode _delay_ms() will work with a resolution of 1/10 ms, providing
+ 106:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    delays up to 6.5535 seconds (independent from CPU frequency).  The
+ 107:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****    user will not be informed about decreased resolution.
+ 108:e:/winavr/lib/gcc/../../avr/include/util/delay.h ****  */
+ 109:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** void
+ 110:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** _delay_ms(double __ms)
+ 111:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** {
+ 112:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 	uint16_t __ticks;
+ 113:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 	double __tmp = ((F_CPU) / 4e3) * __ms;
+ 114:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 	if (__tmp < 1.0)
+ 115:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 		__ticks = 1;
+ 116:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 	else if (__tmp > 65535)
+ 117:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 	{
+ 118:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 		//	__ticks = requested delay in 1/10 ms
+ 119:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 		__ticks = (uint16_t) (__ms * 10.0);
+ 120:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 		while(__ticks)
+ 121:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 		{
+ 122:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 			// wait 1/10 ms
+ 123:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 			_delay_loop_2(((F_CPU) / 4e3) / 10);
+ 124:e:/winavr/lib/gcc/../../avr/include/util/delay.h **** 			__ticks --;
+ 887               	_AVR\\M328P\\src\\main.c",132,0,0,.Ltext15
+ 888               	.Ltext15:
+ 890               	.LM107:
+ 891               		ldi r24,lo8(0)
+ 892 027a 01F4      		ldi r22,lo8(3)
+ 893 027c 84EF      		ldi r20,lo8(.LC0)
+ 894 027e 91E0      		ldi r21,hi8(.LC0)
+ 895               		call LCD_write_string
+ 897               	.LM108:
+ 898               		ldi r24,lo8(1)
+ 899               		ldi r22,lo8(1)
+ 900               		ldi r20,lo8(.LC1)
+ 901               		ldi r21,hi8(.LC1)
+ 902               		call LCD_write_string
+ 904               	.LM109:
+ 905 0280 20E9      		ldi r24,lo8(3)
+ 906 0282 31E0      		ldi r22,lo8(1)
+ 907               		ldi r20,lo8(.LC2)
+ 908 0284 F901      		ldi r21,hi8(.LC2)
+ 909               		call LCD_write_string
+ 910               		ldi r24,lo8(-15536)
+ 911 0286 3197      		ldi r25,hi8(-15536)
+ 912 0288 01F4      	.LBB170:
+ 913               	.LBB171:
+ 914               	.LBB172:
+ 915               	.LBB173:
+ 917               	.Ltext16:
+ 919               	.LM110:
+ 920               		ldi r18,lo8(400)
+ 921 028a 0197      		ldi r19,hi8(400)
+ 922               	.L56:
+ 923               		movw r30,r18
+ 924 028c 01F4      	/* #APP */
+ 925               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 926               		1: sbiw r30,1
+ 927               		brne 1b
+ 928               	 ;  0 "" 2
+ 929               	/* #NOAPP */
+ 930               	.LBE173:
+ 931 028e 80E0      	.LBE172:
+ 933 0292 40E0      	.Ltext17:
+ 935 0296 0E94 0000 	.LM111:
+ 936               		sbiw r24,1
+ 938 029a 81E0      	.LM112:
+ 939 029c 61E0      		brne .L56
+ 940 029e 40E0      	.LBE171:
+ 941 02a0 50E0      	.LBE170:
+ 943               	.Ltext18:
+ 945 02a6 83E0      	.LM113:
+ 946 02a8 61E0      		call LCD_ClearDisplay
+ 948 02ac 50E0      	.LM114:
+ 949 02ae 0E94 0000 		ldi r24,lo8(0)
+ 950 02b2 80E5      		ldi r22,lo8(0)
+ 951 02b4 93EC      		ldi r20,lo8(.LC3)
+ 952               		ldi r21,hi8(.LC3)
+ 953               		call LCD_write_string
+ 954               	.LBB174:
+ 955               	.LBB175:
+ 956               	.LBB176:
+ 957               	.LBB177:
+ 959               	.Ltext19:
+ 961 02b8 31E0      	.LM115:
+ 962               		ldi r18,lo8(400)
+ 963 02ba F901      		ldi r19,hi8(400)
+ 964               	.L59:
+ 965               	.LBE177:
+ 966 02bc 3197      	.LBE176:
+ 967 02be 01F4      	.LBE175:
+ 968               	.LBE174:
+ 970               	.Ltext20:
+ 972               	.LM116:
+ 973               		sbi 37-32,5
+ 974               		ldi r24,lo8(5000)
+ 975               		ldi r25,hi8(5000)
+ 976 02c0 0197      	.L57:
+ 977               	.LBB181:
+ 978               	.LBB180:
+ 979 02c2 01F4      	.LBB179:
+ 980               	.LBB178:
+ 982               	.Ltext21:
+ 984               	.LM117:
+ 985               		movw r30,r18
+ 986 02c4 0E94 0000 	/* #APP */
+ 987               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 988               		1: sbiw r30,1
+ 989 02c8 80E0      		brne 1b
+ 990 02ca 60E0      	 ;  0 "" 2
+ 991 02cc 40E0      	/* #NOAPP */
+ 992 02ce 50E0      	.LBE178:
+ 993 02d0 0E94 0000 	.LBE179:
+ 995               	.Ltext22:
+ 997               	.LM118:
+ 998               		sbiw r24,1
+ 1000               	.LM119:
+ 1001               		brne .L57
+ 1002 02d4 20E9      	.LBE180:
+ 1003 02d6 31E0      	.LBE181:
+ 1005               	.Ltext23:
+ 1007               	.LM120:
+ 1008               		cbi 37-32,5
+ 1009               		ldi r24,lo8(5000)
+ 1010               		ldi r25,hi8(5000)
+ 1011               	.L58:
+ 1012               	.LBB182:
+ 1013 02d8 2D9A      	.LBB183:
+ 1014 02da 88E8      	.LBB184:
+ 1015 02dc 93E1      	.LBB185:
+ 1017               	.Ltext24:
+ 1019               	.LM121:
+ 1020               		movw r30,r18
+ 1021               	/* #APP */
+ 1022               	 ;  105 "e:/winavr/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 1023               		1: sbiw r30,1
+ 1024               		brne 1b
+ 1025 02de F901      	 ;  0 "" 2
+ 1026               	/* #NOAPP */
+ 1027               	.LBE185:
+ 1028 02e0 3197      	.LBE184:
+ 1030               	.Ltext25:
+ 1032               	.LM122:
+ 1033               		sbiw r24,1
+ 1035               	.LM123:
+ 1036               		brne .L58
+ 1037               		rjmp .L59
+ 1038 02e4 0197      	.LBE183:
+ 1039               	.LBE182:
+ 1077 02f8 00C0      	.Lscope11:
+ 1078               	.global	i2c_STATUS
+ 1079               	.global	i2c_STATUS
+ 1080               		.section .bss
+ 1083               	i2c_STATUS:
+ 1084               		.skip 1,0
+ 1085               	.global	LCD_Light
+ 1086               		.data
+ 1089               	LCD_Light:
+ 1090               		.byte	1
+ 1091               	.global	LabelERR
+ 1092               	.LC4:
+ 1093               		.string	"\316\370\350\341\352\340"
+ 1094               		.section	.progmem.data,"a",@progbits
+ 1097               	LabelERR:
+ 1098               		.word	.LC4
+ 1099               	.global	Welcome_1_row
+ 1102               	Welcome_1_row:
+ 1103               		.word	.LC0
+ 1104               	.global	Welcome_2_row
+ 1107               	Welcome_2_row:
+ 1108               		.word	.LC1
+ 1109               	.global	Welcome_4_row
+ 1112               	Welcome_4_row:
+ 1113               		.word	.LC2
+ 1114               	.global	Label_time
+ 1115               		.data
+ 1116               	.LC5:
+ 1117               		.string	"\302\356\347\344\363\365(%): "
+ 1118               		.section	.progmem.data
+ 1121               	Label_time:
+ 1122               		.word	.LC5
+ 1123               	.global	Label_shift
+ 1124 0000 00        		.data
+ 1125               	.LC6:
+ 1126               		.string	"\321\344\342\350\343(ms): "
+ 1127               		.section	.progmem.data
+ 1130 003f 01        	Label_shift:
+ 1131               		.word	.LC6
+ 1132               	.global	row_1
+ 1135               	row_1:
+ 1136               		.word	.LC3
+ 1137               		.comm i2c_Buffer,4,1
+ 1138 0000 0000      		.comm i2c_index,1,1
+ 1139               		.comm i2c_ByteCount,1,1
+ 1152               		.text
+ 1154               	.Letext0:
+ 1155               	.global __do_copy_data
+ 1156               	.global __do_clear_bss
+ 1157 0047 C2EE E7E4 	...
+ 1157      F3F5 2825 
+ 1157      293A 2000 
 DEFINED SYMBOLS
                             *ABS*:00000000 main.c
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:2      *ABS*:0000003f __SREG__
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:3      *ABS*:0000003e __SP_H__
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:4      *ABS*:0000003d __SP_L__
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:5      *ABS*:00000034 __CCP__
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:6      *ABS*:00000000 __tmp_reg__
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:7      *ABS*:00000001 __zero_reg__
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:104    .text:00000000 init
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:158    .text:0000002a main
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:176    .bss:00000000 i2c_STATUS
-C:\Users\al-si\AppData\Local\Temp/ccbcFprx.s:182    .data:00000000 i2c_SlaveAddress
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:2      *ABS*:0000003f __SREG__
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:3      *ABS*:0000003e __SP_H__
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:4      *ABS*:0000003d __SP_L__
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:5      *ABS*:00000034 __CCP__
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:104    .text:00000000 init
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:154    .text:00000024 I2C_StartCondition
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:179    .text:00000034 I2C_StopCondition
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:199    .text:0000003c I2C_SendAddress
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:235    .text:00000052 I2C_SendByte
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:265    .text:00000066 I2C_SendChar
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1129   .data:0000003f LCD_Light
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:382    .text:000000de LCD_send_poluChar
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:447    .text:00000118 InitLCD
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:634    .text:0000019e LCD_write_string
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:755    .text:00000228 LCD_ClearDisplay
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:851    .text:00000262 main
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1123   .bss:00000000 i2c_STATUS
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1137   .progmem.data:00000000 LabelERR
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1142   .progmem.data:00000002 Welcome_1_row
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1147   .progmem.data:00000004 Welcome_2_row
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1152   .progmem.data:00000006 Welcome_4_row
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1161   .progmem.data:00000008 Label_time
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1170   .progmem.data:0000000a Label_shift
+C:\Users\al-si\AppData\Local\Temp/cc1wLYYO.s:1175   .progmem.data:0000000c row_1
                             *COM*:00000004 i2c_Buffer
                             *COM*:00000001 i2c_index
                             *COM*:00000001 i2c_ByteCount
